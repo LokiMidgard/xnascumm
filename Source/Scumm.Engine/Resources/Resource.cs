@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Scumm.Engine.Resources
 {
-    class Resource
+    public class Resource
     {
     }
 }

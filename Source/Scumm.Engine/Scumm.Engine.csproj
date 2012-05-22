@@ -92,12 +92,19 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EventManager.cs" />
     <Compile Include="IO\ScummBinaryReader.cs" />
     <Compile Include="IO\ScummStream.cs" />
+    <Compile Include="Resources\Graphics\Image.cs" />
+    <Compile Include="Resources\Graphics\EncoderType.cs" />
+    <Compile Include="Resources\Graphics\ImageLoader.cs" />
+    <Compile Include="Resources\RoomLoader.cs" />
     <Compile Include="Resources\Resource.cs" />
     <Compile Include="Resources\ResourceIndexEntry.cs" />
+    <Compile Include="Resources\ResourceLoader.cs" />
     <Compile Include="Resources\ResourceManager.cs" />
     <Compile Include="Resources\Room.cs" />
+    <Compile Include="SceneManager.cs" />
     <Compile Include="ScummEngine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

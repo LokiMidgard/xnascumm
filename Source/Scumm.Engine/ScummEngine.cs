@@ -12,26 +12,42 @@ using Scumm.Engine.Resources;
 
 namespace Scumm.Engine
 {
-    public class ScummEngine : Microsoft.Xna.Framework.Game
+    public class ScummEngine : Game
     {
-        ResourceManager resourceManager;
-        GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
-
+        private static ScummEngine instance;      
+        private SceneManager sceneManager;
+        private ResourceManager resourceManager;
+        
+        public static ScummEngine Instance
+        {
+            get { return instance; }
+        }
         public ResourceManager ResourceManager
         {
             get { return resourceManager; }
-            set { resourceManager = value; }
+            private set { resourceManager = value; }
         }
-
-
+        public SceneManager SceneManager
+        {
+            get { return sceneManager; }
+            private set { sceneManager = value; }
+        }
+                
         public ScummEngine(string gamePath, string gameId, int scummVersion)
         {
-            graphics = new GraphicsDeviceManager(this);
-            Content.RootDirectory = "Content";
+            if (instance != null)
+            {
+                throw new InvalidOperationException("A scumm engine instance already exists.");
+            }
+            instance = this;
+
+            // Initialize the scene manager
+            this.SceneManager = new SceneManager(this);
+            Components.Add(SceneManager);
 
             this.IsMouseVisible = true;
             this.ResourceManager = new ResourceManager(gamePath, gameId, 5);
+           
         }
 
         protected override void Initialize()
@@ -41,28 +57,21 @@ namespace Scumm.Engine
 
         protected override void LoadContent()
         {
-            // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(GraphicsDevice);
-
+            base.LoadContent();
         }
 
         protected override void UnloadContent()
         {
+            base.UnloadContent();
         }
 
         protected override void Update(GameTime gameTime)
         {
-            // Allows the game to exit
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
-                this.Exit();
-
             base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.Black);
-
             base.Draw(gameTime);
         }
     }

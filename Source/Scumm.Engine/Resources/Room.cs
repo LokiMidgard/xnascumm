@@ -7,9 +7,26 @@ using Microsoft.Xna.Framework;
 
 namespace Scumm.Engine.Resources
 {
-    class Room : Resource
+    public class Room : Resource
     {
-        Texture2D backgroundImage;
+        Image backgroundImage;
         Color[] palette;
+
+        public Image BackgroundImage
+        {
+            get { return backgroundImage; }
+            set { backgroundImage = value; }
+        }
+        
+        public Color[] Palette
+        {
+            get { return palette; }
+            set { palette = value; }
+        }
+
+        public void Draw(SpriteBatch spriteBatch)
+        {
+            backgroundImage.Draw(spriteBatch);
+        }
     }
 }

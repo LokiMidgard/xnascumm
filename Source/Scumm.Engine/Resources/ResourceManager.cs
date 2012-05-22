@@ -4,17 +4,21 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using Scumm.Engine.IO;
+using Scumm.Engine.Resources.Loaders;
 
 namespace Scumm.Engine.Resources
 {
     public class ResourceManager
     {
+        private static readonly IDictionary<string, object> emptyParameters = new Dictionary<string, object>();
         private ushort roomsCount, scriptsCount, soundsCount, costumesCount, charsetsCount;
-        private IList<ResourceIndexEntry> roomsIndexList;
-        private IList<ResourceIndexEntry> scriptsIndexList;
-        private IList<ResourceIndexEntry> soundsIndexList;
-        private IList<ResourceIndexEntry> costumesIndexList;
-        private IList<ResourceIndexEntry> charsetsIndexList;
+        private ResourceIndexEntry[] roomsIndexList;
+        private ResourceIndexEntry[] scriptsIndexList;
+        private ResourceIndexEntry[] soundsIndexList;
+        private ResourceIndexEntry[] costumesIndexList;
+        private ResourceIndexEntry[] charsetsIndexList;
+        private ScummBinaryReader dataFileReader;
+        private Dictionary<string, ResourceLoader> loaders;
 
         public ResourceManager(string gamePath, string gameId, int scummVersion)
         {
@@ -25,6 +29,13 @@ namespace Scumm.Engine.Resources
 
             // Read the game index file
             ReadIndexFile();
+
+            // Read the game data file
+            ReadDataFile();
+
+            loaders = new Dictionary<string, ResourceLoader>();
+            loaders.Add("ROOM", new RoomLoader());
+            loaders.Add("RMIM", new ImageLoader());
         }
 
         public string GameId
@@ -97,70 +108,57 @@ namespace Scumm.Engine.Resources
 
             else if (blockType == "MAXS")
             {
-                //var variablesCount = reader.ReadUInt16();
-                //
-                //// Skip 2 bytes
-                //reader.ReadUInt16();
-                //
-                //var bitVariablesCount = reader.ReadUInt16();
-                //var localObjectsCount = reader.ReadUInt16();
-                //var arraysCount = reader.ReadUInt16();
-                //
-                //// Skip 2 bytes
-                //reader.ReadUInt16();
-                //
-                //var verbsCount = reader.ReadUInt16();
-                //var floatingObjectsCount = reader.ReadUInt16();
-                //var inventoryObjectsCount = reader.ReadUInt16();
-                //this.roomsCount = reader.ReadUInt16();
-                //this.scriptsCount = reader.ReadUInt16();
-                //this.soundsCount = reader.ReadUInt16();
-                //this.charsetsCount = reader.ReadUInt16();
-                //this.costumesCount = reader.ReadUInt16();
-                //var globalObjectsCount = reader.ReadUInt16();
-                //var newNamesCount = 50;
-                //var globalScriptsCount = 200;
+                var variablesCount = reader.ReadUInt16();
+                
+                // Skip 2 bytes
+                reader.ReadUInt16();
+                
+                uint bitVariablesCount = reader.ReadUInt16();
+                uint localObjectsCount = reader.ReadUInt16();
+                uint newNamesCount = reader.ReadUInt16();
+                uint charsetsCount = reader.ReadUInt16();
+                uint verbsCount = reader.ReadUInt16();
+                uint arraysCount = reader.ReadUInt16();
+                uint inventoryObjectsCount = reader.ReadUInt16();
             }
 
             else if (blockType == "DROO")
             {
-                //this.roomsIndexList = ReadResourceReferenceList(reader, this.roomsCount);
+                this.roomsIndexList = ReadResourceReferenceList(reader, ref roomsCount);
             }
 
             else if (blockType == "DSCR")
             {
-                //this.scriptsIndexList = ReadResourceReferenceList(reader, this.scriptsCount);
+                this.scriptsIndexList = ReadResourceReferenceList(reader, ref scriptsCount);
             }
 
             else if (blockType == "DSOU")
             {
-                //this.soundsIndexList = ReadResourceReferenceList(reader, this.soundsCount);
+                this.soundsIndexList = ReadResourceReferenceList(reader, ref soundsCount);
             }
 
             else if (blockType == "DCOS")
             {
-                //this.costumesIndexList = ReadResourceReferenceList(reader, this.costumesCount);
+                this.costumesIndexList = ReadResourceReferenceList(reader, ref costumesCount);
             }
 
             else if (blockType == "DCHR")
             {
-                //this.charsetsIndexList = ReadResourceReferenceList(reader, this.charsetsCount);
+                this.charsetsIndexList = ReadResourceReferenceList(reader, ref charsetsCount);
             }
 
             else if (blockType == "DOBJ")
             {
-                //var itemsCount = reader.ReadUInt16();
-                //
-                //var objectsOwnerTable = reader.ReadBytes(itemsCount);
-                //var objectsStateTable = new byte[itemsCount];
-                //
-                //for (int i = 0; i < itemsCount; i++)
-                //{
-                //    objectsStateTable[i] = (byte)(objectsOwnerTable[i] >> 4);
-                //    objectsOwnerTable[i] = (byte)(objectsOwnerTable[i] & 0x0F);
-                //}
-                //
-                //var objectsClassTable = reader.ReadBytes(4 * itemsCount);
+                uint itemsCount = reader.ReadUInt16();
+                                
+                for (int i = 0; i < itemsCount; i++)
+                {
+                    byte ownerState = reader.ReadByte();
+                }
+                for (int i = 0; i < itemsCount; i++)
+                {
+                    uint classData = reader.ReadUInt32();
+                }   
             }
             else if (blockType == "AARY")
             {
@@ -171,31 +169,175 @@ namespace Scumm.Engine.Resources
             }
         }
 
-        //private IList<ResourceIndexEntry> ReadResourceReferenceList(ScummBinaryReader reader, ushort excpectedItemsCount)
-        //{
-        //    var resourceReferenceList = new List<ResourceIndexEntry>();
-        //
-        //    var itemsCount = reader.ReadUInt16();
-        //
-        //    if (itemsCount != excpectedItemsCount)
-        //    {
-        //        throw new InvalidDataException(string.Format("Cannot read resource reference list: the items count doesn't match the expected items count. (Readed: {0}, Expected: {1})", itemsCount, excpectedItemsCount));
-        //    }
-        //
-        //    var roomIdList = new byte[itemsCount];
-        //
-        //    for (int i = 0; i < itemsCount; i++)
-        //    {
-        //        roomIdList[i] = reader.ReadByte();
-        //    }
-        //
-        //    for (int i = 0; i < itemsCount; i++)
-        //    {
-        //        var resourceOffset = reader.ReadUInt32();
-        //        resourceReferenceList.Add(new ResourceIndexEntry(roomIdList[i], resourceOffset));
-        //    }
-        //
-        //    return resourceReferenceList;
-        //}
+        private ResourceIndexEntry[] ReadResourceReferenceList(ScummBinaryReader reader, ref ushort itemsCount)
+        {
+            itemsCount = reader.ReadUInt16();
+
+            var resourceReferenceList = new ResourceIndexEntry[itemsCount];
+            var roomIdList = new byte[itemsCount];
+        
+            for (int i = 0; i < itemsCount; i++)
+            {
+                roomIdList[i] = reader.ReadByte();
+            }
+            for (int i = 0; i < itemsCount; i++)
+            {
+                var resourceOffset = reader.ReadUInt32();
+                resourceReferenceList[i] = new ResourceIndexEntry(roomIdList[i], resourceOffset);
+            }
+        
+            return resourceReferenceList;
+        }
+
+        private void ReadDataFile()
+        {
+            // Read the entire game data file into memory for now
+            var dataPath = Path.Combine(this.GamePath, string.Format("{0}.001", this.GameId));
+            Console.WriteLine("Reading data file '{0}'...", dataPath);
+            this.dataFileReader = new ScummBinaryReader(new ScummStream(dataPath, this.ScummVersion));
+
+            // Read first block with room offset - other offsets are just wrong
+            if (FindDataBlock("LOFF") > 0)
+            {
+                this.roomsCount = this.dataFileReader.ReadByte();
+                this.roomsIndexList = new ResourceIndexEntry[this.roomsCount];
+
+                for (int i = 0; i < this.roomsCount; i++)
+                {
+                    var roomId = this.dataFileReader.ReadByte();
+                    var roomOffset = this.dataFileReader.ReadUInt32();
+
+                    this.roomsIndexList[i] = new ResourceIndexEntry(roomId, roomOffset);
+                }
+            }
+        }
+
+        public uint FindDataBlock(string blockType, uint startOffset)
+        {
+            // Position the stream to the start offset
+            this.dataFileReader.BaseStream.Position = startOffset;
+
+            return FindDataBlock(blockType);
+        }
+
+        public uint FindDataBlock(string blockType)
+        {
+            var currentBlockType = new string(this.dataFileReader.ReadChars(4));
+            var itemSize = this.dataFileReader.ReadUInt32BigEndian();
+
+            while (this.dataFileReader.BaseStream.Position <= this.dataFileReader.BaseStream.Length)
+            {
+                if (currentBlockType == blockType)
+                {
+                    return itemSize;
+                }
+
+                if (!IsContainerBlock(currentBlockType))
+                {
+                    this.dataFileReader.BaseStream.Position += itemSize - 8;
+                }
+
+                currentBlockType = new string(this.dataFileReader.ReadChars(4));
+                itemSize = this.dataFileReader.ReadUInt32BigEndian();
+            }
+
+            return 0;
+        }
+
+        private bool IsContainerBlock(string blockType)
+        {
+            if (blockType == "LECF" || blockType == "LFLF" || blockType == "ROOM" || blockType == "PALS" || blockType == "WRAP" || blockType == "RMIM" || blockType == "IM00" || blockType == "OBIM" || blockType == "IMnn" || blockType == "OBCD" || blockType == "SOUN" || blockType == "SOU")
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public T Load<T>(string resourceType, int resourceId) where T : Resource
+        {
+            return Load<T>(resourceType, resourceId, emptyParameters);
+        }
+
+        public T Load<T>(string resourceType, int resourceId, IDictionary<string, object> parameters) where T : Resource
+        {
+            if (this.loaders.ContainsKey(resourceType))
+            {
+                var loader = this.loaders[resourceType];
+                ResourceIndexEntry roomReference = FindIndexFromResourceId(resourceType, resourceId);
+
+                // Change the position of the stream
+                this.dataFileReader.BaseStream.Position = roomReference.Offset;
+
+                if (resourceType != "ROOM")
+                {
+                    this.dataFileReader.BaseStream.Seek(roomReference.Offset, SeekOrigin.Current);
+                }
+
+                // Load the resource
+                var resource = loader.LoadResourceData(dataFileReader, resourceType, parameters);
+
+                // Return the resource
+                return (T)resource;
+            }
+            else
+            {
+                throw new InvalidOperationException(string.Format("No resource loaders for blockType '{0}' were found.", resourceType));
+            }
+        }
+
+        public T Load<T>(string resourceType, IDictionary<string, object> parameters) where T : Resource
+        {
+            if (parameters.ContainsKey("RoomOffset"))
+            {
+                if (ScummEngine.Instance.ResourceManager.FindDataBlock(resourceType, (uint)parameters["RoomOffset"]) == 0)
+                {
+                    throw new InvalidOperationException("Could not find the room background block.");
+                }
+            }
+
+            else
+            {
+                if (ScummEngine.Instance.ResourceManager.FindDataBlock(resourceType) == 0)
+                {
+                    throw new InvalidOperationException("Could not find the room background block.");
+                }
+            }
+
+            //TODO: Add cache support?
+            if (this.loaders.ContainsKey(resourceType))
+            {
+                var loader = this.loaders[resourceType];
+
+                // Load the resource
+                var resource = loader.LoadResourceData(dataFileReader, null, parameters);
+
+                // Return the resource
+                return (T)resource;
+            }
+
+            else
+            {
+                throw new InvalidOperationException(string.Format("No resource loaders for blockType '{0}' were found.", resourceType));
+            }
+        }
+
+        private ResourceIndexEntry FindIndexFromResourceId(string resourceType, int resourceId)
+        {
+            if (resourceType == "COST")
+            {
+                return this.costumesIndexList[resourceId];
+            }
+            if (resourceType == "SCRP")
+            {
+                return this.scriptsIndexList[resourceId];
+            }
+            if (resourceType == "ROOM")
+            {
+                return this.roomsIndexList[resourceId];
+            }
+
+            throw new InvalidOperationException("Resource Id not found.");
+        }
     }
 }
