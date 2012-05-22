@@ -104,6 +104,12 @@
     <Compile Include="Resources\ResourceLoader.cs" />
     <Compile Include="Resources\ResourceManager.cs" />
     <Compile Include="Resources\Room.cs" />
+    <Compile Include="Resources\Scripts\ArrayType.cs" />
+    <Compile Include="Resources\Scripts\ScriptLoader.cs" />
+    <Compile Include="Resources\Scripts\ScriptManager.cs" />
+    <Compile Include="Resources\Scripts\Script.cs" />
+    <Compile Include="Resources\Scripts\ScriptStatus.cs" />
+    <Compile Include="Resources\Scripts\ScriptV5.cs" />
     <Compile Include="SceneManager.cs" />
     <Compile Include="ScummEngine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

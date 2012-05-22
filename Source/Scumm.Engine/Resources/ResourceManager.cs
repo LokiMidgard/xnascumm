@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using Scumm.Engine.IO;
 using Scumm.Engine.Resources.Loaders;
+using Scumm.Engine.Resources.Scripts;
 
 namespace Scumm.Engine.Resources
 {
@@ -36,6 +37,7 @@ namespace Scumm.Engine.Resources
             loaders = new Dictionary<string, ResourceLoader>();
             loaders.Add("ROOM", new RoomLoader());
             loaders.Add("RMIM", new ImageLoader());
+            loaders.Add("SCRP", new ScriptLoader());
         }
 
         public string GameId

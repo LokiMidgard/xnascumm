@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using Scumm.Engine.Resources;
+using Scumm.Engine.Resources.Scripts;
 
 namespace Scumm.Engine
 {
@@ -17,6 +18,7 @@ namespace Scumm.Engine
         private static ScummEngine instance;      
         private SceneManager sceneManager;
         private ResourceManager resourceManager;
+        private ScriptManager scriptManager;
         
         public static ScummEngine Instance
         {
@@ -26,6 +28,11 @@ namespace Scumm.Engine
         {
             get { return resourceManager; }
             private set { resourceManager = value; }
+        }
+        public ScriptManager ScriptManager
+        {
+            get { return scriptManager; }
+            private set { scriptManager = value; }
         }
         public SceneManager SceneManager
         {
