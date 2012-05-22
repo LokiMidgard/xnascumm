@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Scumm.Engine.IO;
 
-namespace Scumm.Engine.Resources.Loaders
+namespace Scumm.Engine.Resources
 {
     public abstract class ResourceLoader
     {

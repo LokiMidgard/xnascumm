@@ -21,14 +21,8 @@ namespace Scumm.Engine.Resources.Scripts
 
             // Read the opcode blocks
             var data = reader.ReadBytes((int)blockSize - 8);
-
-            if (ScummEngine.Instance.ResourceManager.ScummVersion == 5)
-            {
-                var script = new ScriptV5(resourceId, data);
-                return script;
-            }
-
-            return null;
+            var script = new ScriptV5(resourceId, data);
+            return script;
         }
     }
 }
