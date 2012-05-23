@@ -54,6 +54,10 @@ namespace Scumm.Engine
 
             this.IsMouseVisible = true;
             this.ResourceManager = new ResourceManager(gamePath, gameId, 5);
+
+            // Initialize script manager
+            this.ScriptManager = new ScriptManager();
+            this.ScriptManager.Init(600);
            
         }
 

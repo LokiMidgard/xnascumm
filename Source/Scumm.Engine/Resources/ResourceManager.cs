@@ -266,16 +266,19 @@ namespace Scumm.Engine.Resources
             if (this.loaders.ContainsKey(resourceType))
             {
                 var loader = this.loaders[resourceType];
-                ResourceIndexEntry roomReference = FindIndexFromResourceId(resourceType, resourceId);
+
+                ResourceIndexEntry resourceReference = FindIndexFromResourceId(resourceType, resourceId);
+
+                // Find the room offset
+                var roomOffset = this.roomsIndexList[resourceReference.RoomId-1].Offset;
 
                 // Change the position of the stream
-                this.dataFileReader.BaseStream.Position = roomReference.Offset;
-
+                this.dataFileReader.BaseStream.Position = roomOffset;
                 if (resourceType != "ROOM")
                 {
-                    this.dataFileReader.BaseStream.Seek(roomReference.Offset, SeekOrigin.Current);
+                    this.dataFileReader.BaseStream.Seek(resourceReference.Offset, SeekOrigin.Current);
                 }
-
+                
                 // Load the resource
                 var resource = loader.LoadResourceData(dataFileReader, resourceType, parameters);
 
