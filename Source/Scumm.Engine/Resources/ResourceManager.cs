@@ -38,6 +38,7 @@ namespace Scumm.Engine.Resources
             loaders.Add("ROOM", new RoomLoader());
             loaders.Add("RMIM", new ImageLoader());
             loaders.Add("SCRP", new ScriptLoader());
+            loaders.Add("STRN", new StringLoader());
         }
 
         public string GameId
@@ -261,6 +262,11 @@ namespace Scumm.Engine.Resources
             return Load<T>(resourceType, resourceId, emptyParameters);
         }
 
+        public T Load<T>(string resourceType, int resourceId, ScummBinaryReader reader) where T : Resource
+        {
+            return Load<T>(resourceType, resourceId, reader, emptyParameters);
+        }
+
         public T Load<T>(string resourceType, int resourceId, IDictionary<string, object> parameters) where T : Resource
         {
             if (this.loaders.ContainsKey(resourceType))
@@ -291,36 +297,36 @@ namespace Scumm.Engine.Resources
             }
         }
 
-        public T Load<T>(string resourceType, IDictionary<string, object> parameters) where T : Resource
+        public T Load<T>(string resourceType, int resourceId, ScummBinaryReader reader, IDictionary<string, object> parameters) where T : Resource
         {
-            if (parameters.ContainsKey("RoomOffset"))
-            {
-                if (ScummEngine.Instance.ResourceManager.FindDataBlock(resourceType, (uint)parameters["RoomOffset"]) == 0)
-                {
-                    throw new InvalidOperationException("Could not find the room background block.");
-                }
-            }
-
-            else
-            {
-                if (ScummEngine.Instance.ResourceManager.FindDataBlock(resourceType) == 0)
-                {
-                    throw new InvalidOperationException("Could not find the room background block.");
-                }
-            }
-
-            //TODO: Add cache support?
             if (this.loaders.ContainsKey(resourceType))
             {
                 var loader = this.loaders[resourceType];
 
                 // Load the resource
-                var resource = loader.LoadResourceData(dataFileReader, null, parameters);
+                var resource = loader.LoadResourceData(reader, resourceType, parameters);
 
                 // Return the resource
                 return (T)resource;
             }
+            else
+            {
+                throw new InvalidOperationException(string.Format("No resource loaders for blockType '{0}' were found.", resourceType));
+            }
+        }
 
+        public T Load<T>(string resourceType, IDictionary<string, object> parameters) where T : Resource
+        {
+            if (this.loaders.ContainsKey(resourceType))
+            {
+                var loader = this.loaders[resourceType];
+       
+                // Load the resource
+                var resource = loader.LoadResourceData(dataFileReader, null, parameters);
+       
+                // Return the resource
+                return (T)resource;
+            }
             else
             {
                 throw new InvalidOperationException(string.Format("No resource loaders for blockType '{0}' were found.", resourceType));

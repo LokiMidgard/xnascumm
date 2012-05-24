@@ -130,7 +130,7 @@ namespace Scumm.Engine.Resources.Scripts
 
                 this.BitVariables[(uint)(offset >> 3)] = 0;
 
-                if ((int)value != 0)
+                if (Convert.ToInt32(value) != 0)
                 {
                     this.BitVariables[(uint)(offset >> 3)] = this.BitVariables[(uint)(offset >> 3)] | (uint)(1 << (offset & 7));
                 }
@@ -144,7 +144,7 @@ namespace Scumm.Engine.Resources.Scripts
             // Check to see if the variable is local
             else if ((variableAddress & 0x4000) != 0)
             {
-                script.WriteLocalVariable(variableAddress & 0xFFF, (int)value);
+                script.WriteLocalVariable(variableAddress & 0xFFF, Convert.ToInt32(value));
             }
         }
 

@@ -115,6 +115,9 @@
     <Compile Include="Resources\Scripts\Script.cs" />
     <Compile Include="Resources\Scripts\ScriptStatus.cs" />
     <Compile Include="Resources\Scripts\ScriptV5.cs" />
+    <Compile Include="Resources\Scripts\VariableV5.cs" />
+    <Compile Include="Resources\ScummString.cs" />
+    <Compile Include="Resources\StringLoader.cs" />
     <Compile Include="SceneManager.cs" />
     <Compile Include="ScummEngine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
