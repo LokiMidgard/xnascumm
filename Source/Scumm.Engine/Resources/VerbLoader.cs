@@ -6,31 +6,31 @@ using Scumm.Engine.IO;
 
 namespace Scumm.Engine.Resources
 {
-    class StringLoader : ResourceLoader
+    class VerbLoader : ResourceLoader
     {
         public override Resource LoadResourceData(ScummBinaryReader reader, string resourceId, IDictionary<string, object> parameters)
         {
-            ScummString scummString = new ScummString(resourceId);
+            Verb verb = new Verb(resourceId);
 
-            byte b;
-            b = reader.ReadByte();
-            
+            int length = 0;
+            byte b = 0xFF;
             while (b != 0x00)
             {
-                scummString.Stream = scummString.Stream + (char)b;
                 b = reader.ReadByte();
-
+                verb.Stream = verb.Stream + (char)b;
+                ++length;
                 if (b == 0xFF)
                 {
                     for (int i = 0; i < 3; ++i)
                     {
-                        b = reader.ReadByte();
-                        scummString.Stream = scummString.Stream + (char)b;
+                        byte c = reader.ReadByte();
+                        verb.Stream = verb.Stream + (char)c;
+                        ++length;
                     }
                 }
             }
-            
-            return scummString;
+
+            return verb;
         }
     }
 }

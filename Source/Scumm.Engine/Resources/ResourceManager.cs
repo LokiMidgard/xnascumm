@@ -6,6 +6,7 @@ using System.IO;
 using Scumm.Engine.IO;
 using Scumm.Engine.Resources.Loaders;
 using Scumm.Engine.Resources.Scripts;
+using Scumm.Engine.Resources.Graphics;
 
 namespace Scumm.Engine.Resources
 {
@@ -13,7 +14,7 @@ namespace Scumm.Engine.Resources
     {
         private static readonly IDictionary<string, object> emptyParameters = new Dictionary<string, object>();
         private ushort roomsCount, scriptsCount, soundsCount, costumesCount, charsetsCount;
-        private ResourceIndexEntry[] roomsIndexList;
+        private IDictionary<byte, uint> roomsIndexList;
         private ResourceIndexEntry[] scriptsIndexList;
         private ResourceIndexEntry[] soundsIndexList;
         private ResourceIndexEntry[] costumesIndexList;
@@ -39,6 +40,9 @@ namespace Scumm.Engine.Resources
             loaders.Add("RMIM", new ImageLoader());
             loaders.Add("SCRP", new ScriptLoader());
             loaders.Add("STRN", new StringLoader());
+            loaders.Add("CHRS", new CharsetLoader());
+            loaders.Add("COST", new CostumeLoader());
+            loaders.Add("VERB", new VerbLoader());
         }
 
         public string GameId
@@ -63,7 +67,7 @@ namespace Scumm.Engine.Resources
         {
             var indexPath = Path.Combine(this.GamePath, string.Format("{0}.000", this.GameId));
 
-            Console.WriteLine("Reading index file '{0}'...", indexPath);
+            Console.WriteLine("Reading index file '{0}'..", indexPath);
             int blockCount = 0;
 
             using (var reader = new ScummBinaryReader(new ScummStream(indexPath, this.ScummVersion)))
@@ -127,7 +131,8 @@ namespace Scumm.Engine.Resources
 
             else if (blockType == "DROO")
             {
-                this.roomsIndexList = ReadResourceReferenceList(reader, ref roomsCount);
+                // just read, not keeping anything besides roomsCount
+                ReadResourceReferenceList(reader, ref roomsCount);
             }
 
             else if (blockType == "DSCR")
@@ -196,21 +201,21 @@ namespace Scumm.Engine.Resources
         {
             // Read the entire game data file into memory for now
             var dataPath = Path.Combine(this.GamePath, string.Format("{0}.001", this.GameId));
-            Console.WriteLine("Reading data file '{0}'...", dataPath);
+            Console.WriteLine("Reading data file '{0}'..", dataPath);
             this.dataFileReader = new ScummBinaryReader(new ScummStream(dataPath, this.ScummVersion));
 
             // Read first block with room offset - other offsets are just wrong
             if (FindDataBlock("LOFF") > 0)
             {
                 this.roomsCount = this.dataFileReader.ReadByte();
-                this.roomsIndexList = new ResourceIndexEntry[this.roomsCount];
+                this.roomsIndexList = new Dictionary<byte, uint>();
 
                 for (int i = 0; i < this.roomsCount; i++)
                 {
                     var roomId = this.dataFileReader.ReadByte();
                     var roomOffset = this.dataFileReader.ReadUInt32();
 
-                    this.roomsIndexList[i] = new ResourceIndexEntry(roomId, roomOffset);
+                    this.roomsIndexList.Add(roomId, roomOffset);
                 }
             }
         }
@@ -257,36 +262,40 @@ namespace Scumm.Engine.Resources
             return false;
         }
 
-        public T Load<T>(string resourceType, int resourceId) where T : Resource
+        public T Load<T>(string resourceType, byte resourceId) where T : Resource
         {
             return Load<T>(resourceType, resourceId, emptyParameters);
         }
 
-        public T Load<T>(string resourceType, int resourceId, ScummBinaryReader reader) where T : Resource
+        public T Load<T>(string resourceType, byte resourceId, ScummBinaryReader reader) where T : Resource
         {
             return Load<T>(resourceType, resourceId, reader, emptyParameters);
         }
 
-        public T Load<T>(string resourceType, int resourceId, IDictionary<string, object> parameters) where T : Resource
+        public T Load<T>(string resourceType, byte resourceId, IDictionary<string, object> parameters) where T : Resource
         {
             if (this.loaders.ContainsKey(resourceType))
             {
                 var loader = this.loaders[resourceType];
 
-                ResourceIndexEntry resourceReference = FindIndexFromResourceId(resourceType, resourceId);
-
-                // Find the room offset
-                var roomOffset = this.roomsIndexList[resourceReference.RoomId-1].Offset;
-
-                // Change the position of the stream
-                this.dataFileReader.BaseStream.Position = roomOffset;
-                if (resourceType != "ROOM")
+                if (resourceType == "ROOM")
                 {
+                    var roomOffset = this.roomsIndexList[resourceId];
+                    this.dataFileReader.BaseStream.Position = roomOffset;
+                }
+                else
+                {
+                    // Find the room offset
+                    ResourceIndexEntry resourceReference = FindIndexFromResourceId(resourceType, resourceId);
+                    var roomOffset = this.roomsIndexList[resourceReference.RoomId];
+
+                    // Change the position of the stream
+                    this.dataFileReader.BaseStream.Position = roomOffset;
                     this.dataFileReader.BaseStream.Seek(resourceReference.Offset, SeekOrigin.Current);
                 }
                 
                 // Load the resource
-                var resource = loader.LoadResourceData(dataFileReader, resourceType, parameters);
+                var resource = loader.LoadResourceData(dataFileReader, resourceType+Convert.ToString(resourceId), parameters);
 
                 // Return the resource
                 return (T)resource;
@@ -343,9 +352,9 @@ namespace Scumm.Engine.Resources
             {
                 return this.scriptsIndexList[resourceId];
             }
-            if (resourceType == "ROOM")
+            if (resourceType == "CHRS")
             {
-                return this.roomsIndexList[resourceId];
+                return this.charsetsIndexList[resourceId];
             }
 
             throw new InvalidOperationException("Resource Id not found.");

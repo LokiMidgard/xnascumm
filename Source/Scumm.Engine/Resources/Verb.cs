@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Scumm.Engine.Resources
 {
-    class ScummString : Resource
+    class Verb : Resource
     {
         string stream;
 
@@ -15,7 +15,7 @@ namespace Scumm.Engine.Resources
             set { stream = value; }
         }
 
-        public ScummString(string resourceId)
+        public Verb(string resourceId)
             : base(resourceId)
         {
             

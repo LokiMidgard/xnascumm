@@ -19,7 +19,7 @@ namespace Scumm.Engine.Resources.Loaders
 			// TODO: Pass in the parameters information of what of image we need to process (Background or object image)
 
 			// Read the image header
-			if (ScummEngine.Instance.ResourceManager.FindDataBlock("RMIH", (uint)parameters["RoomOffset"]) == 0)
+            if (ScummEngine.Instance.ResourceManager.FindDataBlock("RMIH", (uint)parameters["RoomOffset"]) == 0)
 			{
 				throw new InvalidOperationException("Could not find the room background header block.");
 			}
@@ -28,7 +28,7 @@ namespace Scumm.Engine.Resources.Loaders
             Console.Write("Image Loader", "Z-buffer count: {0}", zbufferCount);
 
 			// TODO: Add code to take into account multiple image blocks (object images)
-			if (ScummEngine.Instance.ResourceManager.FindDataBlock("IM00") == 0)
+            if (ScummEngine.Instance.ResourceManager.FindDataBlock("IM00") == 0)
 			{
 				throw new InvalidOperationException("Could not find image block.");
 			}
@@ -40,7 +40,7 @@ namespace Scumm.Engine.Resources.Loaders
 
 		private void ReadImageDataBlock(ScummBinaryReader reader, Image image, Color[] roomPalette)
 		{
-			if (ScummEngine.Instance.ResourceManager.FindDataBlock("SMAP") == 0)
+            if (ScummEngine.Instance.ResourceManager.FindDataBlock("SMAP") == 0)
 			{
 				throw new InvalidOperationException("Could not find image data block.");
 			}
@@ -107,7 +107,7 @@ namespace Scumm.Engine.Resources.Loaders
 				}
 			}
 
-			image.Texture = new Microsoft.Xna.Framework.Graphics.Texture2D(ScummEngine.Instance.GraphicsDevice, image.Width, image.Height, false, Microsoft.Xna.Framework.Graphics.SurfaceFormat.Color);
+            image.Texture = new Microsoft.Xna.Framework.Graphics.Texture2D(ScummEngine.Instance.GraphicsDevice, image.Width, image.Height, false, Microsoft.Xna.Framework.Graphics.SurfaceFormat.Color);
 			image.Texture.SetData(textureData);
 		}
 

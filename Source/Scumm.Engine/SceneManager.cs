@@ -14,9 +14,8 @@ namespace Scumm.Engine.Resources
         private GraphicsDeviceManager graphics;
         private EventManager eventManager;
 
-        //private InputManager input;
         private Room currentRoom;
-        private int curRoomIndex;
+        private byte curRoomIndex;
 
         public Room CurrentRoom
         {

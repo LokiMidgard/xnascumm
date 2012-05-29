@@ -14,6 +14,10 @@ namespace Scumm.Engine.Resources.Scripts
             this.Variables = new Dictionary<uint, object>();
             this.BitVariables = new Dictionary<uint, uint>();
             this.ActiveScripts = new List<Script>();
+
+            // Initialize variables
+            WriteVariable((uint)VariableV5.VAR_VERSION, 21);
+            WriteVariable((uint)VariableV5.VAR_DEBUGMODE, 1);
         }
 
         public IList<Script> ActiveScripts
@@ -40,7 +44,7 @@ namespace Scumm.Engine.Resources.Scripts
             private set;
         }
 
-        public void Init(int? bootParameter)
+        public void Run(int? bootParameter)
         {
             // Run the boot script
             var script = ScummEngine.Instance.ResourceManager.Load<Script>("SCRP", (byte)1);
@@ -84,8 +88,7 @@ namespace Scumm.Engine.Resources.Scripts
             this.ActiveScripts.Add(script);
             script.Run(arguments);
         }
-
-        // TODO: Use Generics instead of object to prevent boxing/unboxing?
+                 
         public object ReadVariable(uint variableAddress, Script script)
         {
             // Check to see if the variable is global
@@ -107,7 +110,8 @@ namespace Scumm.Engine.Resources.Scripts
                 return script.ReadLocalVariable(variableAddress & 0xFFF);
             }
 
-            return -1;
+            // Variable was never written
+            return 0;
         }
 
         public void WriteVariable(uint variableAddress, object value)

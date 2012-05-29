@@ -17,6 +17,22 @@ namespace Scumm.Engine.IO
             this.buffer = new byte[16];
         }
 
+        public Byte[] ReadByteString()
+        {
+            Byte[] str = new Byte[16];
+
+            int i = 0;
+            Byte next = ReadByte();
+
+            while(next != 0xFF) {
+                str[i] = next;
+                ++i;
+                next = ReadByte();
+            }
+
+            return str;
+        }
+
         public uint ReadUInt32BigEndian()
         {
             this.FillInternalBuffer(4);

@@ -9,11 +9,15 @@ namespace Scumm.Engine.Resources.Scripts
 {
     public abstract class Script : Resource
     {
-        protected Script(string resourceId, byte[] data)
-        {
-            // TODO: Remove this, debug only
-            //File.WriteAllBytes("Dump\\" + resourceId, data);
+        // huge hack
+        // for some reason the first time you read a variable in script 1 it returns 1
+        private bool first = true;
 
+        protected int currentOpCode;
+
+        protected Script(string resourceId, byte[] data)
+            : base(resourceId)
+        {
             this.DataReader = new ScummBinaryReader(new MemoryStream(data));
             this.Status = ScriptStatus.Stopped;
         }
@@ -93,14 +97,14 @@ namespace Scumm.Engine.Resources.Scripts
         {
             var args = new List<int>();
 
-            var num = ScummEngine.Instance.ScriptManager.VirtualMachineStack.Pop();
+            var num = ScummEngine.Pop();
 
             var index = num;
 
             while (index > 0)
             {
                 index--;
-                args.Add(ScummEngine.Instance.ScriptManager.VirtualMachineStack.Pop());
+                args.Add(ScummEngine.Pop());
             }
 
             return args.ToArray();
@@ -108,6 +112,10 @@ namespace Scumm.Engine.Resources.Scripts
 
         public int ReadLocalVariable(uint variableAddress)
         {
+            if(first && ResourceId == "SCRP1") {
+                first = false;
+                return 1;
+            }
             if (variableAddress < 0 || variableAddress >= 25)
             {
                 throw new IndexOutOfRangeException("Local variable address was out of range.");
@@ -130,6 +138,57 @@ namespace Scumm.Engine.Resources.Scripts
             }
 
             this.LocalVariables[variableAddress] = value;
+        }
+
+        // These functions are used because many opcodes have variations - arguments change from direct values to variable references
+        // According to the current opcode and the mask, we can decide whether to use a reference or a direct value
+        // While these functions are not very elegant, their usage greatly simplifies implementation
+        public Byte GetVarOrDirectByte(Byte mask)
+        {
+            if ((this.currentOpCode & mask) != 0)
+                return Convert.ToByte(ScummEngine.ReadVariable(GetVariableAddress(), this));
+            else
+                return DataReader.ReadByte();
+        }
+        public Int16 GetVarOrDirectWord(Byte mask)
+        {
+            if ((this.currentOpCode & mask) != 0)
+                return Convert.ToInt16(ScummEngine.ReadVariable(GetVariableAddress(), this));
+            else
+                return DataReader.ReadInt16();
+                
+        }
+        public uint GetVariableAddress()
+        {
+            uint address = DataReader.ReadUInt16();
+            if ((address & 0x2000) != 0)
+            {
+                uint aux = DataReader.ReadUInt16();
+                if ((aux & 0x2000) != 0)
+                {
+                    uint auxAddress = aux & ~(uint)0x2000;
+                    address += Convert.ToUInt16(ScummEngine.ReadVariable(auxAddress, this));
+                }
+                else
+                {
+                    address += aux & 0xFFF;
+                }
+                address &= ~(uint)0x2000;
+            }
+            return address;
+        }
+        public Int16[] GetWordVararg()
+        {
+            Int16[] result = new Int16[16];
+            currentOpCode = DataReader.ReadByte();
+
+            int length = 0;
+            while (currentOpCode != 0xFF)
+            {
+                result[length++] = GetVarOrDirectWord(0x80);
+                currentOpCode = DataReader.ReadByte();
+            }
+            return result;
         }
 
         public abstract void ExecuteInstruction();

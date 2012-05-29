@@ -11,7 +11,7 @@ namespace Scumm.Engine.Resources.Graphics
     {
         public override Resource LoadResourceData(ScummBinaryReader reader, string resourceId, IDictionary<string, object> parameters)
         {
-            //uint blockSize = ScummEngine.Instance.ResourceManager.FindDataBlock("SCRP");
+            //uint blockSize = ScummEngine.ResourceManager.FindDataBlock("SCRP");
             //
             //// Read script Header information
             //if (blockSize == 0)
@@ -21,7 +21,7 @@ namespace Scumm.Engine.Resources.Graphics
             //
             //// Read the opcode blocks
             //var data = reader.ReadBytes((int)blockSize - 8);
-            var costume = new Costume();
+            var costume = new Costume(resourceId);
             return costume;
         }
     }

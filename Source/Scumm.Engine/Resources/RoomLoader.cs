@@ -13,7 +13,7 @@ namespace Scumm.Engine.Resources.Loaders
         {
             Console.Write("Room Loader", "Loading Room {0}", resourceId);
 
-            var room = new Room();
+            var room = new Room(resourceId);
             var roomOffset = (uint)reader.BaseStream.Position;
 
             // Read Room Header information

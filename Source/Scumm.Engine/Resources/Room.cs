@@ -12,6 +12,11 @@ namespace Scumm.Engine.Resources
         Image backgroundImage;
         Color[] palette;
 
+        public Room(string resourceId)
+            : base(resourceId)
+        {
+        }
+
         public Image BackgroundImage
         {
             get { return backgroundImage; }

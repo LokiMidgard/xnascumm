@@ -7,5 +7,10 @@ namespace Scumm.Engine.Resources.Graphics
 {
     class Costume : Resource
     {
+        public Costume(string resourceId)
+            : base(resourceId)
+        {
+            
+        }
     }
 }

@@ -56,9 +56,7 @@ namespace Scumm.Engine
             this.ResourceManager = new ResourceManager(gamePath, gameId, 5);
 
             // Initialize script manager
-            this.ScriptManager = new ScriptManager();
-            this.ScriptManager.Init(600);
-           
+            this.ScriptManager = new ScriptManager();           
         }
 
         protected override void Initialize()
@@ -69,6 +67,8 @@ namespace Scumm.Engine
         protected override void LoadContent()
         {
             base.LoadContent();
+
+            this.ScriptManager.Run(0);
         }
 
         protected override void UnloadContent()
@@ -84,6 +84,24 @@ namespace Scumm.Engine
         protected override void Draw(GameTime gameTime)
         {
             base.Draw(gameTime);
+        }
+
+        // Aliasing for methods
+        static public void WriteVariable(uint variableAddress, object value, Script script)
+        {
+            Instance.ScriptManager.WriteVariable(variableAddress, value, script);
+        }
+        static public object ReadVariable(uint variableAddress, Script script)
+        {
+            return Instance.ScriptManager.ReadVariable(variableAddress, script);
+        }
+        static public int Pop()
+        {
+            return Instance.ScriptManager.VirtualMachineStack.Pop();
+        }
+        static public void Push(int value)
+        {
+            Instance.ScriptManager.VirtualMachineStack.Push(value);
         }
     }
 }

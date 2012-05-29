@@ -7,5 +7,10 @@ namespace Scumm.Engine.Resources.Graphics
 {
     class Charset : Resource
     {
+        public Charset(string resourceId)
+            : base(resourceId)
+        {
+            
+        }
     }
 }

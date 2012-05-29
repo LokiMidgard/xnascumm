@@ -10,6 +10,7 @@ namespace Scumm.Engine.Resources
     public class Image : Resource
     {
         public Image(int width, int height)
+            : base("")
         {
             this.Width = width;
             this.Height = height;
