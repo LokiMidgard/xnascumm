@@ -65,6 +65,20 @@ namespace Scumm.Engine.Resources.Scripts
             }
         }
 
+        private void StartScene(byte roomId)
+        {
+            ScummEngine.WriteVariable((uint)VariableV5.VAR_NEW_ROOM, roomId, this);
+            RunExitScript();
+
+            ScummEngine.WriteVariable((uint)VariableV5.VAR_ROOM, roomId, this);
+            ScummEngine.WriteVariable((uint)VariableV5.VAR_ROOM_RESOURCE, roomId, this);
+
+            ScummEngine.Instance.SceneManager.CurrentRoomId = roomId;
+
+            if (roomId != 0) RunEntryScript();
+
+        }
+
         private void RunExitScript()
         {
             Byte scriptId = Convert.ToByte(ScummEngine.ReadVariable((uint)VariableV5.VAR_EXIT_SCRIPT, this));
@@ -202,7 +216,7 @@ namespace Scumm.Engine.Resources.Scripts
 
             data = GetWordVararg();
 
-            // TODO: I don't know what this are used for
+            // TODO: I don't know what these are used for
             a = b = 0;
             if ((currentOpCode & 0x20) != 0) a = 1;
             if ((currentOpCode & 0x40) != 0) b = 1;
@@ -252,8 +266,9 @@ namespace Scumm.Engine.Resources.Scripts
         {
 	        //int a = camera._follows;
             //
-	        //setCameraFollows(derefActorSafe(
-            GetVarOrDirectByte(0x80);
+            Actor actor = ScummEngine.Instance.ResourceManager.findActor(GetVarOrDirectByte(0x80));
+            if (actor.RoomID != ScummEngine.Instance.SceneManager.CurrentRoomId)
+                StartScene(actor.RoomID);
             //, "actorFollowCamera"));
             //
 	        //if (camera._follows != a) 
@@ -272,8 +287,8 @@ namespace Scumm.Engine.Resources.Scripts
 
         private void OpCodePutActorInRoom() 
         {
-            GetVarOrDirectByte(0x80);
-	        GetVarOrDirectByte(0x40);
+            Actor actor = ScummEngine.Instance.ResourceManager.findActor(GetVarOrDirectByte(0x80));
+	        actor.RoomID = GetVarOrDirectByte(0x40);
 	    }
 
         private void OpCodePutActor() 
@@ -292,14 +307,7 @@ namespace Scumm.Engine.Resources.Scripts
         private void OpCodeLoadRoom()
         {
             byte room = GetVarOrDirectByte(0x80);
-
-            ScummEngine.WriteVariable((uint)VariableV5.VAR_NEW_ROOM, room, this);
-            RunExitScript();
-
-            ScummEngine.WriteVariable((uint)VariableV5.VAR_ROOM, room, this);
-            ScummEngine.WriteVariable((uint)VariableV5.VAR_ROOM_RESOURCE, room, this);
-
-            if (room != 0) RunEntryScript();
+            StartScene(room);
         }
 
         private void OpCodeSetVariableRange()
@@ -370,15 +378,17 @@ namespace Scumm.Engine.Resources.Scripts
 
         private void OpCodeActorCommand()
         {
-            Byte actor = GetVarOrDirectByte(0x80);
+            Byte actorId = GetVarOrDirectByte(0x80);
+            Actor actor = ScummEngine.Instance.ResourceManager.findActor(actorId);
 
             currentOpCode = DataReader.ReadByte();
             while (currentOpCode != 0xFF)
             {
                 switch (currentOpCode)
                 {
-                    case 1: /* costume */
-                        GetVarOrDirectByte(0x80);
+                    // costume
+                    case 1:
+                        Byte costume = GetVarOrDirectByte(0x80);
                         //setActorCostume(a, );
                         break;
                     case 2: /* walkspeed */
@@ -411,8 +421,9 @@ namespace Scumm.Engine.Resources.Scripts
                         GetVarOrDirectByte(0x40);
                         GetVarOrDirectByte(0x20);
                         break;
-                    case 8: /* init */
-                        //initActor(a, 0);
+                    // Init
+                    case 8: 
+                        actor.Init(0);
                         break;
                     case 9: /* elevation */
                         GetVarOrDirectWord(0x80);

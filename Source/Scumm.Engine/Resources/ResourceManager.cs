@@ -14,11 +14,15 @@ namespace Scumm.Engine.Resources
     {
         private static readonly IDictionary<string, object> emptyParameters = new Dictionary<string, object>();
         private ushort roomsCount, scriptsCount, soundsCount, costumesCount, charsetsCount;
+
         private IDictionary<byte, uint> roomsIndexList;
         private ResourceIndexEntry[] scriptsIndexList;
         private ResourceIndexEntry[] soundsIndexList;
         private ResourceIndexEntry[] costumesIndexList;
         private ResourceIndexEntry[] charsetsIndexList;
+
+        private Dictionary<int, Actor> actors;
+
         private ScummBinaryReader dataFileReader;
         private Dictionary<string, ResourceLoader> loaders;
 
@@ -43,6 +47,8 @@ namespace Scumm.Engine.Resources
             loaders.Add("CHRS", new CharsetLoader());
             loaders.Add("COST", new CostumeLoader());
             loaders.Add("VERB", new VerbLoader());
+
+            actors = new Dictionary<int, Actor>();
         }
 
         public string GameId
@@ -358,6 +364,15 @@ namespace Scumm.Engine.Resources
             }
 
             throw new InvalidOperationException("Resource Id not found.");
+        }
+
+        public Actor findActor(int actorId)
+        {
+            if(!(actors.ContainsKey(actorId)))
+            {
+                actors.Add(actorId, new Actor());
+            }
+            return actors[actorId];
         }
     }
 }

@@ -15,12 +15,18 @@ namespace Scumm.Engine.Resources
         private EventManager eventManager;
 
         private Room currentRoom;
+        private List<Actor> currentActors;
         private byte curRoomIndex;
 
-        public Room CurrentRoom
+        public byte CurrentRoomId
         {
-            get { return currentRoom; }
-            set { currentRoom = value; }
+            get { return curRoomIndex; }
+
+            set { 
+                curRoomIndex = value;
+                if(curRoomIndex != 0)
+                    currentRoom = ScummEngine.Instance.ResourceManager.Load<Room>("ROOM", curRoomIndex);
+            }
         }
         public SpriteBatch SpriteBatch
         {
@@ -52,23 +58,23 @@ namespace Scumm.Engine.Resources
             //if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
             //    this.Exit();
 
-            if (eventManager.Clicked(Keys.Left))
-            {
-                if (curRoomIndex > 0)
-                {
-                    --curRoomIndex;
-                    currentRoom = ScummEngine.Instance.ResourceManager.Load<Room>("ROOM", curRoomIndex);
-                }
-            }
-
-            if (eventManager.Clicked(Keys.Right))
-            {
-                if (curRoomIndex < 82)
-                {
-                    ++curRoomIndex;
-                    currentRoom = ScummEngine.Instance.ResourceManager.Load<Room>("ROOM", curRoomIndex);
-                }
-            }
+            //if (eventManager.Clicked(Keys.Left))
+            //{
+            //    if (curRoomIndex > 0)
+            //    {
+            //        --curRoomIndex;
+            //        currentRoom = ScummEngine.Instance.ResourceManager.Load<Room>("ROOM", curRoomIndex);
+            //    }
+            //}
+            //
+            //if (eventManager.Clicked(Keys.Right))
+            //{
+            //    if (curRoomIndex < 82)
+            //    {
+            //        ++curRoomIndex;
+            //        currentRoom = ScummEngine.Instance.ResourceManager.Load<Room>("ROOM", curRoomIndex);
+            //    }
+            //}
 
         }
 
