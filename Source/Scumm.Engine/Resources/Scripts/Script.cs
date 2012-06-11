@@ -15,9 +15,17 @@ namespace Scumm.Engine.Resources.Scripts
 
         protected int currentOpCode;
 
-        protected Script(string resourceId, byte[] data)
+        protected ScriptManager scriptManager;
+        protected SceneManager sceneManager;
+        protected ResourceManager resourceManager;
+        
+        protected Script(string resourceId, byte[] data, ScriptManager scriptMngr, ResourceManager resourceMngr, SceneManager sceneMngr)
             : base(resourceId)
         {
+            scriptManager = scriptMngr;
+            sceneManager = sceneMngr;
+            resourceManager = resourceMngr;
+
             this.DataReader = new ScummBinaryReader(new MemoryStream(data));
             this.Status = ScriptStatus.Stopped;
         }
@@ -93,23 +101,6 @@ namespace Scumm.Engine.Resources.Scripts
             }
         }
 
-        protected int[] GetStackList()
-        {
-            var args = new List<int>();
-
-            var num = ScummEngine.Pop();
-
-            var index = num;
-
-            while (index > 0)
-            {
-                index--;
-                args.Add(ScummEngine.Pop());
-            }
-
-            return args.ToArray();
-        }
-
         public int ReadLocalVariable(uint variableAddress)
         {
             if(first && ResourceId == "SCRP1") {
@@ -127,7 +118,7 @@ namespace Scumm.Engine.Resources.Scripts
         public void Stop()
         {
             this.Status = ScriptStatus.Stopped;
-            ScummEngine.Instance.ScriptManager.ActiveScripts.Remove(this);
+            scriptManager.ActiveScripts.Remove(this);
         }
 
         public void WriteLocalVariable(uint variableAddress, int value)
@@ -146,14 +137,14 @@ namespace Scumm.Engine.Resources.Scripts
         public Byte GetVarOrDirectByte(Byte mask)
         {
             if ((this.currentOpCode & mask) != 0)
-                return Convert.ToByte(ScummEngine.ReadVariable(GetVariableAddress(), this));
+                return Convert.ToByte(scriptManager.ReadVariable(GetVariableAddress(), this));
             else
                 return DataReader.ReadByte();
         }
         public Int16 GetVarOrDirectWord(Byte mask)
         {
             if ((this.currentOpCode & mask) != 0)
-                return Convert.ToInt16(ScummEngine.ReadVariable(GetVariableAddress(), this));
+                return Convert.ToInt16(scriptManager.ReadVariable(GetVariableAddress(), this));
             else
                 return DataReader.ReadInt16();
                 
@@ -167,7 +158,7 @@ namespace Scumm.Engine.Resources.Scripts
                 if ((aux & 0x2000) != 0)
                 {
                     uint auxAddress = aux & ~(uint)0x2000;
-                    address += Convert.ToUInt16(ScummEngine.ReadVariable(auxAddress, this));
+                    address += Convert.ToUInt16(scriptManager.ReadVariable(auxAddress, this));
                 }
                 else
                 {

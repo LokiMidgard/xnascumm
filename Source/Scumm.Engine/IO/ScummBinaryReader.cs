@@ -80,12 +80,59 @@ namespace Scumm.Engine.IO
 
         public void ResetBitCursor()
         {
-            this.bitPosition = -1;
+            bitPosition = -1;
+        }
+
+        public uint FindDataBlock(string blockType, uint startOffset)
+        {
+            // Position the stream to the start offset
+            BaseStream.Position = startOffset;
+
+            return FindDataBlock(blockType);
+        }
+
+        public uint FindDataBlock(string blockType)
+        {
+            var currentBlockType = new string(ReadChars(4));
+            var itemSize = ReadUInt32BigEndian();
+
+            while (BaseStream.Position <= BaseStream.Length)
+            {
+                if (currentBlockType == blockType)
+                {
+                    return itemSize;
+                }
+
+                if (!IsContainerBlock(currentBlockType))
+                {
+                    BaseStream.Position += itemSize - 8;
+                }
+
+                currentBlockType = new string(ReadChars(4));
+                itemSize = ReadUInt32BigEndian();
+            }
+
+            return 0;
+        }
+
+        #region Private Methods
+
+        private bool IsContainerBlock(string blockType)
+        {
+            if (blockType == "LECF" || blockType == "LFLF" || blockType == "ROOM" || blockType == "PALS" || blockType == "WRAP" || blockType == "RMIM" || blockType == "IM00" || blockType == "OBIM" || blockType == "IMnn" || blockType == "OBCD" || blockType == "SOUN" || blockType == "SOU")
+            {
+                return true;
+            }
+
+            return false;
         }
 
         private void FillInternalBuffer(int count)
         {
-            this.BaseStream.Read(this.buffer, 0, count);
+            BaseStream.Read(this.buffer, 0, count);
         }
+
+        #endregion
+
     }
 }

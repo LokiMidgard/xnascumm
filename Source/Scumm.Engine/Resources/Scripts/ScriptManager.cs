@@ -8,16 +8,29 @@ namespace Scumm.Engine.Resources.Scripts
 {
     public class ScriptManager
     {
-        public ScriptManager()
+        byte currentRoomId;
+
+        ResourceManager resourceManager;
+
+        public ScriptManager(ResourceManager manager)
         {
             this.VirtualMachineStack = new Stack<int>();
             this.Variables = new Dictionary<uint, object>();
             this.BitVariables = new Dictionary<uint, uint>();
             this.ActiveScripts = new List<Script>();
 
+            currentRoomId = 0;
+            resourceManager = manager;
+
             // Initialize variables
             WriteVariable((uint)VariableV5.VAR_VERSION, 21);
             WriteVariable((uint)VariableV5.VAR_DEBUGMODE, 1);
+        }
+
+        public byte CurrentRoomId
+        {
+            get { return currentRoomId; }
+            set { currentRoomId = value; }
         }
 
         public IList<Script> ActiveScripts
@@ -47,7 +60,7 @@ namespace Scumm.Engine.Resources.Scripts
         public void Run(int? bootParameter)
         {
             // Run the boot script
-            var script = ScummEngine.Instance.ResourceManager.Load<Script>("SCRP", (byte)1);
+            var script = resourceManager.Load<Script>("SCRP", (byte)1);
                         
             if (bootParameter.HasValue)
             {
@@ -83,7 +96,7 @@ namespace Scumm.Engine.Resources.Scripts
         {
             // TODO: Implement slot system for multi threaded script execution at each frame
 
-            var script = ScummEngine.Instance.ResourceManager.Load<Script>("SCRP", (byte)scriptId);
+            var script = resourceManager.Load<Script>("SCRP", (byte)scriptId);
 
             this.ActiveScripts.Add(script);
             script.Run(arguments);
@@ -230,5 +243,16 @@ namespace Scumm.Engine.Resources.Scripts
                 this.WriteVariable(arrayAddress, new byte[dimension1 + 1, dimension2 + 1]);
             }
         }
+
+        // Aliasing for methods
+        public int Pop()
+        {
+            return VirtualMachineStack.Pop();
+        }
+        public void Push(int value)
+        {
+            VirtualMachineStack.Push(value);
+        }
+
     }
 }

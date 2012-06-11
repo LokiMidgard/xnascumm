@@ -7,6 +7,8 @@ using Scumm.Engine.IO;
 using Scumm.Engine.Resources.Loaders;
 using Scumm.Engine.Resources.Scripts;
 using Scumm.Engine.Resources.Graphics;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Scumm.Engine.Resources
 {
@@ -34,23 +36,24 @@ namespace Scumm.Engine.Resources
             this.GameId = gameId;
             this.ScummVersion = scummVersion;
 
+            loaders = new Dictionary<string, ResourceLoader>();
+
+            actors = new Dictionary<int, Actor>();
+        }
+
+        public void AddLoader(String key, ResourceLoader loader)
+        {
+            loader.ResourceManager = this;
+            loaders.Add(key, loader);
+        }
+
+        public void LoadGame()
+        {
             // Read the game index file
             ReadIndexFile();
 
             // Read the game data file
             ReadDataFile();
-
-            loaders = new Dictionary<string, ResourceLoader>();
-            loaders.Add("ROOM", new RoomLoader());
-            loaders.Add("RMIM", new ImageLoader());
-            loaders.Add("SCRP", new ScriptLoader());
-            loaders.Add("STRN", new StringLoader());
-            loaders.Add("CHRS", new CharsetLoader());
-            loaders.Add("COST", new CostumeLoader());
-            loaders.Add("VERB", new VerbLoader());
-            loaders.Add("OBJC", new ObjectLoader());
-
-            actors = new Dictionary<int, Actor>();
         }
 
         public string GameId
@@ -75,7 +78,6 @@ namespace Scumm.Engine.Resources
         {
             var indexPath = Path.Combine(this.GamePath, string.Format("{0}.000", this.GameId));
 
-            Console.WriteLine("Reading index file '{0}'..", indexPath);
             int blockCount = 0;
 
             using (var reader = new ScummBinaryReader(new ScummStream(indexPath, this.ScummVersion)))
@@ -86,7 +88,6 @@ namespace Scumm.Engine.Resources
                 while (reader.BaseStream.Position <= reader.BaseStream.Length)
                 {
                     blockCount++;
-                    Console.WriteLine("Reading index block of type '{0}', size {1}", blockType, itemSize);
 
                     ReadIndexBlock(reader, blockType);
 
@@ -116,7 +117,6 @@ namespace Scumm.Engine.Resources
                         roomName += (char)(roomNameData[i] ^ 0xFF);
                     }
 
-                    Console.WriteLine(Convert.ToString(roomId) + ". " + roomName);
                     roomId = reader.ReadByte();
                 }
             }
@@ -211,11 +211,10 @@ namespace Scumm.Engine.Resources
         {
             // Read the entire game data file into memory for now
             var dataPath = Path.Combine(this.GamePath, string.Format("{0}.001", this.GameId));
-            Console.WriteLine("Reading data file '{0}'..", dataPath);
             this.dataFileReader = new ScummBinaryReader(new ScummStream(dataPath, this.ScummVersion));
 
             // Read first block with room offset - other offsets are just wrong
-            if (FindDataBlock("LOFF") > 0)
+            if (dataFileReader.FindDataBlock("LOFF") > 0)
             {
                 this.roomsCount = this.dataFileReader.ReadByte();
                 this.roomsIndexList = new Dictionary<byte, uint>();
@@ -228,48 +227,6 @@ namespace Scumm.Engine.Resources
                     this.roomsIndexList.Add(roomId, roomOffset);
                 }
             }
-        }
-
-        public uint FindDataBlock(string blockType, uint startOffset)
-        {
-            // Position the stream to the start offset
-            this.dataFileReader.BaseStream.Position = startOffset;
-
-            return FindDataBlock(blockType);
-        }
-
-        public uint FindDataBlock(string blockType)
-        {
-            var currentBlockType = new string(this.dataFileReader.ReadChars(4));
-            var itemSize = this.dataFileReader.ReadUInt32BigEndian();
-
-            while (this.dataFileReader.BaseStream.Position <= this.dataFileReader.BaseStream.Length)
-            {
-                if (currentBlockType == blockType)
-                {
-                    return itemSize;
-                }
-
-                if (!IsContainerBlock(currentBlockType))
-                {
-                    this.dataFileReader.BaseStream.Position += itemSize - 8;
-                }
-
-                currentBlockType = new string(this.dataFileReader.ReadChars(4));
-                itemSize = this.dataFileReader.ReadUInt32BigEndian();
-            }
-
-            return 0;
-        }
-
-        private bool IsContainerBlock(string blockType)
-        {
-            if (blockType == "LECF" || blockType == "LFLF" || blockType == "ROOM" || blockType == "PALS" || blockType == "WRAP" || blockType == "RMIM" || blockType == "IM00" || blockType == "OBIM" || blockType == "IMnn" || blockType == "OBCD" || blockType == "SOUN" || blockType == "SOU")
-            {
-                return true;
-            }
-
-            return false;
         }
 
         public T Load<T>(string resourceType, byte resourceId) where T : Resource

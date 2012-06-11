@@ -8,6 +8,10 @@ namespace Scumm.Engine.Resources
 {
     class StringLoader : ResourceLoader
     {
+        public StringLoader()
+        {
+        }
+
         public override Resource LoadResourceData(ScummBinaryReader reader, string resourceId, IDictionary<string, object> parameters)
         {
             ScummString scummString = new ScummString(resourceId);

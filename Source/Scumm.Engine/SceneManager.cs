@@ -17,18 +17,6 @@ namespace Scumm.Engine.Resources
         private Room currentRoom;
         private List<Actor> currentActors;
         private List<Object> inventory;
-        private byte curRoomIndex;
-
-        public byte CurrentRoomId
-        {
-            get { return curRoomIndex; }
-
-            set { 
-                curRoomIndex = value;
-                if(curRoomIndex != 0)
-                    currentRoom = ScummEngine.Instance.ResourceManager.Load<Room>("ROOM", curRoomIndex);
-            }
-        }
 
         public int InventorySize
         {
@@ -39,6 +27,12 @@ namespace Scumm.Engine.Resources
         {
             get { return spriteBatch; }
             set { spriteBatch = value; }
+        }
+
+        public Room CurrentRoom
+        {
+            get { return currentRoom; }
+            set { currentRoom = value; }
         }
 
         public SceneManager(Game game)
@@ -52,8 +46,6 @@ namespace Scumm.Engine.Resources
 
             currentActors = new List<Actor>();
             inventory = new List<Object>();
-
-            curRoomIndex = 0;
         }
 
         protected override void LoadContent()
@@ -101,10 +93,9 @@ namespace Scumm.Engine.Resources
 
         }
 
-        public void AddObjectToInventory(Byte roomId, UInt16 objectId)
+        public void AddObjectToInventory(Object obj)
         {
-            Room room = ScummEngine.Instance.ResourceManager.Load<Room>("ROOM", roomId);
-            inventory.Add(room.getObject(objectId));
+            inventory.Add(obj);
         }
 
         public Object GetInventoryObject(int i)

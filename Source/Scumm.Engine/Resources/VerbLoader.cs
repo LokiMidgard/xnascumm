@@ -8,6 +8,10 @@ namespace Scumm.Engine.Resources
 {
     class VerbLoader : ResourceLoader
     {
+        public VerbLoader()
+        {
+        }
+
         public override Resource LoadResourceData(ScummBinaryReader reader, string resourceId, IDictionary<string, object> parameters)
         {
             Verb verb = new Verb(resourceId);

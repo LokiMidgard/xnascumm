@@ -8,14 +8,18 @@ namespace Scumm.Engine.Resources
 {
     class ObjectLoader : ResourceLoader
     {
+        public ObjectLoader()
+        {
+        }
+
         public override Resource LoadResourceData(ScummBinaryReader reader, string resourceId, IDictionary<string, object> parameters)
         {
-            ScummEngine.Instance.ResourceManager.FindDataBlock("OBCD");
-            uint blockSize = ScummEngine.Instance.ResourceManager.FindDataBlock("CDHD");
+            reader.FindDataBlock("OBCD");
+            uint blockSize = reader.FindDataBlock("CDHD");
             
             UInt16 id =  reader.ReadUInt16();
             var data = reader.ReadBytes((int)blockSize - 10);
-            var obj = ScummEngine.Instance.ResourceManager.FindObject(id);
+            var obj = ResourceManager.FindObject(id);
             return obj;
         }
     }

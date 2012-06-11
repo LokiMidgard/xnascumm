@@ -11,6 +11,8 @@ using Microsoft.Xna.Framework.Media;
 using Scumm.Engine.Resources;
 using Scumm.Engine.Resources.Scripts;
 using System.IO;
+using Scumm.Engine.Resources.Loaders;
+using Scumm.Engine.Resources.Graphics;
 
 namespace Scumm.Engine
 {
@@ -26,10 +28,6 @@ namespace Scumm.Engine
         {
             get { return logFile; }
             set { logFile = value; }
-        }
-        public static ScummEngine Instance
-        {
-            get { return instance; }
         }
         public ResourceManager ResourceManager
         {
@@ -49,34 +47,42 @@ namespace Scumm.Engine
                 
         public ScummEngine(string gamePath, string gameId, int scummVersion)
         {
-            if (instance != null)
-            {
-                throw new InvalidOperationException("A scumm engine instance already exists.");
-            }
-            instance = this;
-
             // Log file
             logFile = new StreamWriter("logFileMy.txt");
 
-            // Initialize the scene manager
-            this.SceneManager = new SceneManager(this);
+            // Initialize scene manager
+            SceneManager = new SceneManager(this);
             Components.Add(SceneManager);
 
-            this.IsMouseVisible = true;
-            this.ResourceManager = new ResourceManager(gamePath, gameId, 5);
+            // Initialize resource manager
+            ResourceManager = new ResourceManager(gamePath, gameId, 5);
 
             // Initialize script manager
-            this.ScriptManager = new ScriptManager();           
+            ScriptManager = new ScriptManager(this.ResourceManager);
         }
 
         protected override void Initialize()
         {
             base.Initialize();
+
         }
 
         protected override void LoadContent()
         {
             base.LoadContent();
+            
+            // Add loaders
+            ResourceManager.AddLoader("ROOM", new RoomLoader());
+            ResourceManager.AddLoader("RMIM", new ImageLoader(GraphicsDevice));
+            ResourceManager.AddLoader("SCRP", new ScriptLoader(ScriptManager, SceneManager));
+            ResourceManager.AddLoader("STRN", new StringLoader());
+            ResourceManager.AddLoader("CHRS", new CharsetLoader());
+            ResourceManager.AddLoader("COST", new CostumeLoader());
+            ResourceManager.AddLoader("VERB", new VerbLoader());
+            ResourceManager.AddLoader("OBJC", new ObjectLoader());
+
+            // Read game files
+            ResourceManager.LoadGame();
 
             this.ScriptManager.Run(0);
         }
@@ -94,24 +100,6 @@ namespace Scumm.Engine
         protected override void Draw(GameTime gameTime)
         {
             base.Draw(gameTime);
-        }
-
-        // Aliasing for methods
-        static public void WriteVariable(uint variableAddress, object value, Script script)
-        {
-            Instance.ScriptManager.WriteVariable(variableAddress, value, script);
-        }
-        static public object ReadVariable(uint variableAddress, Script script)
-        {
-            return Instance.ScriptManager.ReadVariable(variableAddress, script);
-        }
-        static public int Pop()
-        {
-            return Instance.ScriptManager.VirtualMachineStack.Pop();
-        }
-        static public void Push(int value)
-        {
-            Instance.ScriptManager.VirtualMachineStack.Push(value);
         }
     }
 }

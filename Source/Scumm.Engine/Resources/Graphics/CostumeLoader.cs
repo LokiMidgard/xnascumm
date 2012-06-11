@@ -9,6 +9,10 @@ namespace Scumm.Engine.Resources.Graphics
 {
     class CostumeLoader : ResourceLoader
     {
+        public CostumeLoader()
+        {
+        }
+
         public override Resource LoadResourceData(ScummBinaryReader reader, string resourceId, IDictionary<string, object> parameters)
         {
             //uint blockSize = ScummEngine.ResourceManager.FindDataBlock("SCRP");

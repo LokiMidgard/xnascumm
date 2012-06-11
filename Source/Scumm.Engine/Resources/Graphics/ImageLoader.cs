@@ -4,31 +4,36 @@ using System.Linq;
 using System.Text;
 using Scumm.Engine.IO;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Scumm.Engine.Resources.Loaders
 {
 	public class ImageLoader : ResourceLoader
 	{
+        GraphicsDevice graphicsDevice;
+
+        public ImageLoader(GraphicsDevice device)
+        {
+            graphicsDevice = device;
+        }
+
         public override Resource LoadResourceData(ScummBinaryReader reader, string resourceId, IDictionary<string, object> parameters)
 		{
-            Console.Write("Image Loader", "Loading Image {0}", resourceId);
-
 			var image = new Image((int)parameters["Width"], (int)parameters["Height"]);
 			var roomPalette = (Color[]) parameters["RoomPalette"];
 
 			// TODO: Pass in the parameters information of what of image we need to process (Background or object image)
 
 			// Read the image header
-            if (ScummEngine.Instance.ResourceManager.FindDataBlock("RMIH", (uint)parameters["RoomOffset"]) == 0)
+            if (reader.FindDataBlock("RMIH", (uint)parameters["RoomOffset"]) == 0)
 			{
 				throw new InvalidOperationException("Could not find the room background header block.");
 			}
 
 			var zbufferCount = reader.ReadUInt16();
-            Console.Write("Image Loader", "Z-buffer count: {0}", zbufferCount);
 
 			// TODO: Add code to take into account multiple image blocks (object images)
-            if (ScummEngine.Instance.ResourceManager.FindDataBlock("IM00") == 0)
+            if (reader.FindDataBlock("IM00") == 0)
 			{
 				throw new InvalidOperationException("Could not find image block.");
 			}
@@ -40,7 +45,7 @@ namespace Scumm.Engine.Resources.Loaders
 
 		private void ReadImageDataBlock(ScummBinaryReader reader, Image image, Color[] roomPalette)
 		{
-            if (ScummEngine.Instance.ResourceManager.FindDataBlock("SMAP") == 0)
+            if (reader.FindDataBlock("SMAP") == 0)
 			{
 				throw new InvalidOperationException("Could not find image data block.");
 			}
@@ -107,7 +112,7 @@ namespace Scumm.Engine.Resources.Loaders
 				}
 			}
 
-            image.Texture = new Microsoft.Xna.Framework.Graphics.Texture2D(ScummEngine.Instance.GraphicsDevice, image.Width, image.Height, false, Microsoft.Xna.Framework.Graphics.SurfaceFormat.Color);
+            image.Texture = new Microsoft.Xna.Framework.Graphics.Texture2D(graphicsDevice, image.Width, image.Height, false, Microsoft.Xna.Framework.Graphics.SurfaceFormat.Color);
 			image.Texture.SetData(textureData);
 		}
 
