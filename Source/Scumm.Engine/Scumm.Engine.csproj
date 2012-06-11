@@ -104,6 +104,8 @@
     <Compile Include="Resources\Graphics\EncoderType.cs" />
     <Compile Include="Resources\Graphics\ImageLoader.cs" />
     <Compile Include="Resources\Graphics\Text.cs" />
+    <Compile Include="Resources\Object.cs" />
+    <Compile Include="Resources\ObjectLoader.cs" />
     <Compile Include="Resources\RoomLoader.cs" />
     <Compile Include="Resources\Resource.cs" />
     <Compile Include="Resources\ResourceIndexEntry.cs" />

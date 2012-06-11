@@ -22,6 +22,7 @@ namespace Scumm.Engine.Resources
         private ResourceIndexEntry[] charsetsIndexList;
 
         private Dictionary<int, Actor> actors;
+        private Object[] objects;
 
         private ScummBinaryReader dataFileReader;
         private Dictionary<string, ResourceLoader> loaders;
@@ -47,6 +48,7 @@ namespace Scumm.Engine.Resources
             loaders.Add("CHRS", new CharsetLoader());
             loaders.Add("COST", new CostumeLoader());
             loaders.Add("VERB", new VerbLoader());
+            loaders.Add("OBJC", new ObjectLoader());
 
             actors = new Dictionary<int, Actor>();
         }
@@ -164,14 +166,16 @@ namespace Scumm.Engine.Resources
             else if (blockType == "DOBJ")
             {
                 uint itemsCount = reader.ReadUInt16();
-                                
-                for (int i = 0; i < itemsCount; i++)
-                {
-                    byte ownerState = reader.ReadByte();
+                objects = new Object[itemsCount];
+
+                for (int i = 0; i < itemsCount; i++) {
+                    objects[i] = new Object();
+                    objects[i].Id = (UInt16)i;
+                    objects[i].OwnerState = reader.ReadByte();
                 }
                 for (int i = 0; i < itemsCount; i++)
                 {
-                    uint classData = reader.ReadUInt32();
+                    objects[i].ClassData = reader.ReadUInt32();
                 }   
             }
             else if (blockType == "AARY")
@@ -366,13 +370,20 @@ namespace Scumm.Engine.Resources
             throw new InvalidOperationException("Resource Id not found.");
         }
 
-        public Actor findActor(int actorId)
+        public Actor FindActor(int actorId)
         {
             if(!(actors.ContainsKey(actorId)))
             {
                 actors.Add(actorId, new Actor());
             }
             return actors[actorId];
+        }
+
+        public Object FindObject(int objectId)
+        {
+            if (objectId >= objects.Count()) 
+                throw new IndexOutOfRangeException();
+            return objects[objectId];
         }
     }
 }

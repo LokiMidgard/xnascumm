@@ -11,7 +11,14 @@ namespace Scumm.Engine.Resources.Scripts
     {
         public override Resource LoadResourceData(ScummBinaryReader reader, string resourceId, IDictionary<string, object> parameters)
         {
-            uint blockSize = ScummEngine.Instance.ResourceManager.FindDataBlock("SCRP");
+            uint blockSize;
+
+            if (parameters.ContainsKey("Type"))
+            {
+                blockSize = ScummEngine.Instance.ResourceManager.FindDataBlock((string)parameters["Type"]);
+            }
+            else
+                blockSize = ScummEngine.Instance.ResourceManager.FindDataBlock("SCRP");
 
             // Read script Header information
             if (blockSize == 0)

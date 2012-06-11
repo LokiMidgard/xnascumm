@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using Scumm.Engine.Resources;
 using Scumm.Engine.Resources.Scripts;
+using System.IO;
 
 namespace Scumm.Engine
 {
@@ -19,7 +20,13 @@ namespace Scumm.Engine
         private SceneManager sceneManager;
         private ResourceManager resourceManager;
         private ScriptManager scriptManager;
-        
+        private StreamWriter logFile;
+
+        public StreamWriter LogFile
+        {
+            get { return logFile; }
+            set { logFile = value; }
+        }
         public static ScummEngine Instance
         {
             get { return instance; }
@@ -47,6 +54,9 @@ namespace Scumm.Engine
                 throw new InvalidOperationException("A scumm engine instance already exists.");
             }
             instance = this;
+
+            // Log file
+            logFile = new StreamWriter("logFileMy.txt");
 
             // Initialize the scene manager
             this.SceneManager = new SceneManager(this);

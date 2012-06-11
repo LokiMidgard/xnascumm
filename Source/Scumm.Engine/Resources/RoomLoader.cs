@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Scumm.Engine.IO;
 using Microsoft.Xna.Framework;
+using Scumm.Engine.Resources.Scripts;
 
 namespace Scumm.Engine.Resources.Loaders
 {
@@ -36,13 +37,23 @@ namespace Scumm.Engine.Resources.Loaders
 
             // Load only the first palette for now
             room.Palette = new Color[256];
-
-            for (int i = 0; i < 256; i++)
+            for (int i = 0; i < 256; ++i)
             {
                 room.Palette[i].R = reader.ReadByte();
                 room.Palette[i].G = reader.ReadByte();
                 room.Palette[i].B = reader.ReadByte();
             }
+
+            room.Objects = new Object[objectsCount];
+            for (int i = 0; i < objectsCount; ++i)
+            {
+                Object obj = ScummEngine.Instance.ResourceManager.Load<Object>("OBJC", new Dictionary<string, object>());
+                room.Objects[i] = obj;
+            }
+
+            // Read entry/exit scripts
+            room.ExitScript = ScummEngine.Instance.ResourceManager.Load<Script>("SCRP", new Dictionary<string, object>() { { "Type", "EXCD" } });
+            room.EntryScript = ScummEngine.Instance.ResourceManager.Load<Script>("SCRP", new Dictionary<string, object>() { { "Type", "ENCD" } });
 
             // Read background image
             room.BackgroundImage = ScummEngine.Instance.ResourceManager.Load<Image>("RMIM", new Dictionary<string, object>() { { "Width", (int)width }, { "Height", (int)height }, { "RoomOffset", roomOffset }, { "RoomPalette", room.Palette } });

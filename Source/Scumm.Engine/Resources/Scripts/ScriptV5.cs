@@ -14,39 +14,53 @@ namespace Scumm.Engine.Resources.Scripts
         {
             opCodeHandlers = new Action[256];
 
-            opCodeHandlers[8] = new Action(OpCodeIsNotEqual);
-            opCodeHandlers[10] = new Action(OpCodeRunScript);
-            opCodeHandlers[12] = new Action(OpCodeResourceCommand);
-            opCodeHandlers[19] = new Action(OpCodeActorCommand);
-            opCodeHandlers[20] = new Action(OpCodePrint);
-            opCodeHandlers[26] = new Action(OpCodeMove);
-            opCodeHandlers[37] = new Action(OpCodePickupObject);
-            opCodeHandlers[38] = new Action(OpCodeSetVariableRange);
-            opCodeHandlers[39] = new Action(OpCodeStringCommand);
-            opCodeHandlers[40] = new Action(OpCodeEqualZero);
-            opCodeHandlers[44] = new Action(OpCodeCursorCommand);
-            opCodeHandlers[51] = new Action(OpCodeRoomCommand);
-            opCodeHandlers[68] = new Action(OpCodeIsLess);
-            opCodeHandlers[70] = new Action(OpCodeIncrement);
-            opCodeHandlers[72] = new Action(OpCodeIsEqual);
-            opCodeHandlers[90] = new Action(OpCodeAdd);
-            opCodeHandlers[114] = new Action(OpCodeLoadRoom);
-            opCodeHandlers[122] = new Action(OpCodeVerbCommand);
-            opCodeHandlers[128] = new Action(OpCodeBreakHere);
-            opCodeHandlers[129] = new Action(OpCodePutActor);
-            opCodeHandlers[136] = new Action(OpCodeIsNotEqual);
-            opCodeHandlers[145] = new Action(OpCodeAnimateActor);
-            opCodeHandlers[154] = new Action(OpCodeMove);
-            opCodeHandlers[160] = new Action(OpCodeStopObjectCode);
-            opCodeHandlers[168] = new Action(OpCodeNotEqualZero);
-            opCodeHandlers[172] = new Action(OpCodeExpression);
-            opCodeHandlers[173] = new Action(OpCodePutActorInRoom);
-            opCodeHandlers[204] = new Action(OpCodePseudoRoom);
-            opCodeHandlers[210] = new Action(OpCodeActorFollowCamera);
-            opCodeHandlers[213] = new Action(OpCodeActorFromPos);
-            opCodeHandlers[232] = new Action(OpCodeGetScriptRunning);
-            opCodeHandlers[245] = new Action(OpCodeFindObject);
-            opCodeHandlers[250] = new Action(OpCodeVerbCommand);
+            opCodeHandlers[8] = new Action(OpIsNotEqual);
+            opCodeHandlers[10] = new Action(OpRunScript);
+            opCodeHandlers[12] = new Action(OpResourceCommand);
+            opCodeHandlers[16] = new Action(OpGetObjectOwner);
+            opCodeHandlers[19] = new Action(OpActorCommand);
+            opCodeHandlers[20] = new Action(OpPrint);
+            opCodeHandlers[24] = new Action(OpJumpRelative);
+            opCodeHandlers[26] = new Action(OpMove);
+            opCodeHandlers[37] = new Action(OpPickupObject);
+            opCodeHandlers[38] = new Action(OpSetVariableRange);
+            opCodeHandlers[39] = new Action(OpStringCommand);
+            opCodeHandlers[40] = new Action(OpEqualZero);
+            opCodeHandlers[41] = new Action(OpSetOwnerOf);
+            opCodeHandlers[42] = new Action(OpRunScript);
+            opCodeHandlers[44] = new Action(OpCursorCommand);
+            opCodeHandlers[51] = new Action(OpRoomCommand);
+            opCodeHandlers[55] = new Action(OpStartObject);
+            opCodeHandlers[68] = new Action(OpIsLess);
+            opCodeHandlers[70] = new Action(OpIncrement);
+            opCodeHandlers[72] = new Action(OpIsEqual);
+            opCodeHandlers[90] = new Action(OpAdd);
+            opCodeHandlers[104] = new Action(OpGetScriptRunning);
+            opCodeHandlers[114] = new Action(OpLoadRoom);
+            opCodeHandlers[120] = new Action(OpIsGreater);
+            opCodeHandlers[122] = new Action(OpVerbCommand);
+            opCodeHandlers[128] = new Action(OpBreakHere);
+            opCodeHandlers[129] = new Action(OpPutActor);
+            opCodeHandlers[136] = new Action(OpIsNotEqual);
+            opCodeHandlers[139] = new Action(OpGetVerbEntryPoint);
+            opCodeHandlers[145] = new Action(OpAnimateActor);
+            opCodeHandlers[154] = new Action(OpMove);
+            opCodeHandlers[160] = new Action(OpStopObjectCode);
+            opCodeHandlers[168] = new Action(OpNotEqualZero);
+            opCodeHandlers[172] = new Action(OpExpression);
+            opCodeHandlers[173] = new Action(OpPutActorInRoom);
+            opCodeHandlers[177] = new Action(OpGetInventoryCount);
+            opCodeHandlers[183] = new Action(OpStartObject);
+            opCodeHandlers[184] = new Action(OpIsLessOrEqual);
+            opCodeHandlers[196] = new Action(OpIsLess);
+            opCodeHandlers[204] = new Action(OpPseudoRoom);
+            opCodeHandlers[210] = new Action(OpActorFollowCamera);
+            opCodeHandlers[213] = new Action(OpActorFromPos);
+            opCodeHandlers[232] = new Action(OpGetScriptRunning);
+            opCodeHandlers[245] = new Action(OpFindObject);
+            opCodeHandlers[248] = new Action(OpIsGreater);
+            opCodeHandlers[250] = new Action(OpVerbCommand);
+            opCodeHandlers[253] = new Action(OpFindInventory);
         }
 
         public override void ExecuteInstruction()
@@ -55,9 +69,15 @@ namespace Scumm.Engine.Resources.Scripts
 
             if (opCodeHandlers[currentOpCode] != null)
             {
-                if(currentOpCode != 26 && currentOpCode != 39)
-                    Console.WriteLine("{0} : {1} ", ResourceId, currentOpCode);
+                if (currentOpCode != 26 && currentOpCode != 39)
+                {
+                    Console.WriteLine("{0} : {1}", ResourceId, currentOpCode);
+                    ScummEngine.Instance.LogFile.WriteLine("{0} : {1}", ResourceId, currentOpCode);
+                    //ScummEngine.Instance.LogFile.WriteLine("{0}", currentOpCode);
+                }
+                Console.WriteLine("{0}", ScummEngine.Instance.ScriptManager.ReadVariable(0, this));
                 opCodeHandlers[currentOpCode]();
+                
             }
             else if (currentOpCode != 0xFF)
             {
@@ -68,26 +88,76 @@ namespace Scumm.Engine.Resources.Scripts
         private void StartScene(byte roomId)
         {
             ScummEngine.WriteVariable((uint)VariableV5.VAR_NEW_ROOM, roomId, this);
-            RunExitScript();
+            RunExitScript(ScummEngine.Instance.SceneManager.CurrentRoomId);
 
             ScummEngine.WriteVariable((uint)VariableV5.VAR_ROOM, roomId, this);
             ScummEngine.WriteVariable((uint)VariableV5.VAR_ROOM_RESOURCE, roomId, this);
 
             ScummEngine.Instance.SceneManager.CurrentRoomId = roomId;
 
-            if (roomId != 0) RunEntryScript();
+            if (roomId != 0) RunEntryScript(roomId);
 
         }
 
-        private void RunExitScript()
+        private void RunExitScript(byte roomId)
         {
             Byte scriptId = Convert.ToByte(ScummEngine.ReadVariable((uint)VariableV5.VAR_EXIT_SCRIPT, this));
-            Script exit = ScummEngine.Instance.ResourceManager.Load<Script>("SCRP", scriptId);
-            exit.Run();
+            if (scriptId != 0)
+            {
+                Script exit = ScummEngine.Instance.ResourceManager.Load<Script>("SCRP", scriptId);
+                exit.Run();
+            }
+
+            if (roomId != 0)
+            {
+                Room room = ScummEngine.Instance.ResourceManager.Load<Room>("ROOM", roomId);
+                if (room.ExitScript != null)
+                    room.ExitScript.Run();
+            }
+           
+            scriptId = Convert.ToByte(ScummEngine.ReadVariable((uint)VariableV5.VAR_EXIT_SCRIPT2, this));
+            if (scriptId != 0)
+            {
+                Script exit = ScummEngine.Instance.ResourceManager.Load<Script>("SCRP", scriptId);
+                exit.Run();
+            }
         }
 
-        private void RunEntryScript()
+        private void RunEntryScript(byte roomId)
         {
+            Byte scriptId = Convert.ToByte(ScummEngine.ReadVariable((uint)VariableV5.VAR_ENTRY_SCRIPT, this));
+            if (scriptId != 0)
+            {
+                Script entry = ScummEngine.Instance.ResourceManager.Load<Script>("SCRP", scriptId);
+                entry.Run();
+            }
+
+            if (roomId != 0)
+            {
+                Room room = ScummEngine.Instance.ResourceManager.Load<Room>("ROOM", roomId);
+                if (room.EntryScript != null)
+                    room.EntryScript.Run();
+            }
+
+            scriptId = Convert.ToByte(ScummEngine.ReadVariable((uint)VariableV5.VAR_ENTRY_SCRIPT2, this));
+            if (scriptId != 0)
+            {
+                Script entry = ScummEngine.Instance.ResourceManager.Load<Script>("SCRP", scriptId);
+                entry.Run();
+            }
+        }
+
+        private void RunHook(byte hookId)
+        {
+            Byte scriptId = Convert.ToByte(ScummEngine.ReadVariable((uint)VariableV5.VAR_HOOK_SCRIPT, this));
+            if (scriptId != 0)
+            {
+                Script hook = ScummEngine.Instance.ResourceManager.Load<Script>("SCRP", scriptId);
+
+                int[] localVars = new int[1];
+                localVars[0] = hookId;
+                hook.Run(localVars);
+            }
         }
 
         private void DecodeParseString(int actor)
@@ -181,9 +251,9 @@ namespace Scumm.Engine.Resources.Scripts
             //textslot.charset[textSlot] = _stringCharset[textSlot];
         }
 
-        #region OpCodes
+        #region Ops
 
-        private void OpCodeMove()
+        private void OpMove()
         {
             uint variableAddress = GetVariableAddress();
             Int16 variableValue = GetVarOrDirectWord(0x80);
@@ -191,56 +261,137 @@ namespace Scumm.Engine.Resources.Scripts
             ScummEngine.WriteVariable(variableAddress, variableValue, this);
         }
 
-        private void OpCodePrint()
+        private void OpPrint()
         {
             byte actor = GetVarOrDirectByte(0x80);
             DecodeParseString(actor);
         }
 
-        private void OpCodePickupObject()
+        private void OpStartObject()
         {
-            var obj = DataReader.ReadUInt16();
-            var room = DataReader.ReadByte();
+            var obj = GetVarOrDirectWord(0x80);
+            var script = GetVarOrDirectByte(0x40);
+            short[] data = GetWordVararg();
         }
 
-        private void OpCodeRunScript()
+        private void OpSetOwnerOf()
         {
-            byte scriptId;
+            var objId = GetVarOrDirectWord(0x80);
+            var owner = GetVarOrDirectByte(0x40);
+
+            if (owner == 0)
+            {
+            }
+
+            Object obj = ScummEngine.Instance.ResourceManager.FindObject(objId);
+            obj.setOwnerState(owner);
+            RunHook(0);
+        }
+
+        private void OpPickupObject()
+        {
+            var objId = DataReader.ReadUInt16();
+            var roomId = DataReader.ReadByte();
+
+            if (roomId == 0)
+                roomId = ScummEngine.Instance.SceneManager.CurrentRoomId;
+
+            ScummEngine.Instance.SceneManager.AddObjectToInventory(roomId, objId);
+            Object obj = ScummEngine.Instance.ResourceManager.FindObject(objId);
+            obj.setOwnerState(1);
+            RunHook(1);
+        }
+
+        private void OpGetInventoryCount()
+        {
+            var address = GetVariableAddress();
+            var owner = GetVarOrDirectByte(0x80);
+
+            int count = 0;
+            for (int i = 0; i < ScummEngine.Instance.SceneManager.InventorySize; ++i)
+            {
+                Object obj = ScummEngine.Instance.SceneManager.GetInventoryObject(i);
+                if (obj != null && obj.getOwnerState() == owner)
+                    ++count;
+            }
+
+            ScummEngine.WriteVariable(address, count, this);
+        }
+
+        private void OpFindInventory()
+        {
+            var address = GetVariableAddress();
+            var owner = GetVarOrDirectByte(0x80);
+            var b = GetVarOrDirectByte(0x40);
+
+            int count = 1;
+            for (int i = 0; i < ScummEngine.Instance.SceneManager.InventorySize; ++i)
+            {
+                Object obj = ScummEngine.Instance.SceneManager.GetInventoryObject(i);
+                if (obj != null && obj.getOwnerState() == owner && count++ == b)
+                {
+                    ScummEngine.WriteVariable(address, obj.Id, this);
+                    return;
+                }
+            }
+
+            ScummEngine.WriteVariable(address, 0, this);
+        }
+
+        private void OpGetVerbEntryPoint()
+        {
+            var address = GetVariableAddress();
+            var a = GetVarOrDirectWord(0x80);
+            var b = GetVarOrDirectWord(0x40);
+            
+            ScummEngine.WriteVariable(address, 50, this);
+        }
+
+        private void OpGetObjectOwner()
+        {
+            uint variableAddress = GetVariableAddress();
+            Int16 objectId = GetVarOrDirectWord(0x80);
+            Object obj = ScummEngine.Instance.ResourceManager.FindObject(objectId);
+
+            ScummEngine.WriteVariable(variableAddress, obj.OwnerState, this);
+        }
+
+        private void OpRunScript()
+        {
+            byte scriptId = GetVarOrDirectByte(0x80);
+            Int16[] data = GetWordVararg();
+
             int a, b;
-            Int16[] data;
-
-            if ((currentOpCode & 0x80) != 0)
-                scriptId = Convert.ToByte(ScummEngine.ReadVariable(GetVariableAddress(), this));
-            else
-                scriptId = DataReader.ReadByte();
-
-            data = GetWordVararg();
-
             // TODO: I don't know what these are used for
             a = b = 0;
             if ((currentOpCode & 0x20) != 0) a = 1;
             if ((currentOpCode & 0x40) != 0) b = 1;
 
-            Script script = ScummEngine.Instance.ResourceManager.Load<Script>("SCRP", scriptId);
-            script.Run();
+            if (scriptId < 200)
+            {
+                Script script = ScummEngine.Instance.ResourceManager.Load<Script>("SCRP", scriptId);
+                script.Run();
+            }
         }
 
-        private void OpCodeGetScriptRunning()
+        private void OpGetScriptRunning()
         {
             uint address = GetVariableAddress();
             Byte script = GetVarOrDirectByte(0x80);
+
+            ScummEngine.WriteVariable(address, 1, this);
         }
 
-        private void OpCodeBreakHere()
+        private void OpBreakHere()
         {
             Stop();
         }
 
-        private void OpCodeStopObjectCode()
+        private void OpStopObjectCode()
         {
         }
 
-        private void OpCodePseudoRoom()
+        private void OpPseudoRoom()
         {
             int i = DataReader.ReadByte();
             int j = DataReader.ReadByte();
@@ -254,7 +405,7 @@ namespace Scumm.Engine.Resources.Scripts
             }
         }
 
-        private void OpCodeFindObject() 
+        private void OpFindObject() 
         {
 	        uint address = GetVariableAddress();
 	        Int16 objX = GetVarOrDirectWord(0x80);
@@ -262,11 +413,11 @@ namespace Scumm.Engine.Resources.Scripts
 	        //setResult(findObject(t, getVarOrDirectWord(0x40)));
         }
 
-        private void OpCodeActorFollowCamera()
+        private void OpActorFollowCamera()
         {
 	        //int a = camera._follows;
             //
-            Actor actor = ScummEngine.Instance.ResourceManager.findActor(GetVarOrDirectByte(0x80));
+            Actor actor = ScummEngine.Instance.ResourceManager.FindActor(GetVarOrDirectByte(0x80));
             if (actor.RoomID != ScummEngine.Instance.SceneManager.CurrentRoomId)
                 StartScene(actor.RoomID);
             //, "actorFollowCamera"));
@@ -277,7 +428,7 @@ namespace Scumm.Engine.Resources.Scripts
 	        //camera._movingToActor = 0;
         }
 
-        private void OpCodeActorFromPos() 
+        private void OpActorFromPos() 
         {
 	        uint address = GetVariableAddress();
             Int16 objX = GetVarOrDirectWord(0x80);
@@ -285,32 +436,32 @@ namespace Scumm.Engine.Resources.Scripts
             //setResult(getActorFromPos(x,y));
         }
 
-        private void OpCodePutActorInRoom() 
+        private void OpPutActorInRoom() 
         {
-            Actor actor = ScummEngine.Instance.ResourceManager.findActor(GetVarOrDirectByte(0x80));
+            Actor actor = ScummEngine.Instance.ResourceManager.FindActor(GetVarOrDirectByte(0x80));
 	        actor.RoomID = GetVarOrDirectByte(0x40);
 	    }
 
-        private void OpCodePutActor() 
+        private void OpPutActor() 
         {
             GetVarOrDirectByte(0x80);
             GetVarOrDirectWord(0x40);
             GetVarOrDirectWord(0x20);
         }
 
-        private void OpCodeAnimateActor()
+        private void OpAnimateActor()
         {
             GetVarOrDirectByte(0x80);
             GetVarOrDirectByte(0x40);
         }
 
-        private void OpCodeLoadRoom()
+        private void OpLoadRoom()
         {
             byte room = GetVarOrDirectByte(0x80);
             StartScene(room);
         }
 
-        private void OpCodeSetVariableRange()
+        private void OpSetVariableRange()
         {
             uint variableId = DataReader.ReadUInt16();
             byte intervalSize = DataReader.ReadByte();
@@ -322,16 +473,22 @@ namespace Scumm.Engine.Resources.Scripts
             }
         }
 
-        private void OpCodeIsNotEqual()
+        private void OpJumpRelative()
+        {
+            Int16 jump = DataReader.ReadInt16();
+            DataReader.BaseStream.Position += jump;
+        }
+
+        private void OpIsNotEqual()
         {
             Int16 a = Convert.ToInt16(ScummEngine.ReadVariable(GetVariableAddress(), this));
             Int16 b = GetVarOrDirectWord(0x80);
 
             Int16 jump = DataReader.ReadInt16();
             if (a == b) DataReader.BaseStream.Position += jump;
-        }
+        }         
 
-        private void OpCodeIsEqual()
+        private void OpIsEqual()
         {
             Int16 a = Convert.ToInt16(ScummEngine.ReadVariable(GetVariableAddress(), this));
             Int16 b = GetVarOrDirectWord(0x80);
@@ -340,7 +497,7 @@ namespace Scumm.Engine.Resources.Scripts
             if (a != b) DataReader.BaseStream.Position += jump;
         }
 
-        private void OpCodeIsLess()
+        private void OpIsLess()
         {
             Int16 a = Convert.ToInt16(ScummEngine.ReadVariable(GetVariableAddress(), this));
             Int16 b = GetVarOrDirectWord(0x80);
@@ -349,37 +506,55 @@ namespace Scumm.Engine.Resources.Scripts
             if (b >= a) DataReader.BaseStream.Position += jump;
         }
 
-        private void OpCodeNotEqualZero()
+        private void OpIsGreater()
+        {
+            Int16 a = Convert.ToInt16(ScummEngine.ReadVariable(GetVariableAddress(), this));
+            Int16 b = GetVarOrDirectWord(0x80);
+
+            Int16 jump = DataReader.ReadInt16();
+            if (b <= a) DataReader.BaseStream.Position += jump;
+        }
+
+        private void OpIsLessOrEqual()
+        {
+            Int16 a = Convert.ToInt16(ScummEngine.ReadVariable(GetVariableAddress(), this));
+            Int16 b = GetVarOrDirectWord(0x80);
+
+            Int16 jump = DataReader.ReadInt16();
+            if (b > a) DataReader.BaseStream.Position += jump;
+        }
+
+        private void OpNotEqualZero()
         {
             Int16 value = Convert.ToInt16(ScummEngine.ReadVariable(GetVariableAddress(), this));
             Int16 jump = DataReader.ReadInt16();
             if (value == 0) DataReader.BaseStream.Position += jump;
         }
 
-        private void OpCodeEqualZero()
+        private void OpEqualZero()
         {
             Int16 value = Convert.ToInt16(ScummEngine.ReadVariable(GetVariableAddress(), this));
             Int16 jump = DataReader.ReadInt16();
             if (value != 0) DataReader.BaseStream.Position += jump;
         }
 
-        private void OpCodeAdd()
+        private void OpAdd()
         {
             uint address = GetVariableAddress();
             Int16 a = GetVarOrDirectWord(0x80);
             ScummEngine.WriteVariable(address, Convert.ToInt16(ScummEngine.ReadVariable(address, this)) + a, this);
         }
 
-        private void OpCodeIncrement()
+        private void OpIncrement()
         {
             uint address = GetVariableAddress();
             ScummEngine.WriteVariable(address, Convert.ToInt16(ScummEngine.ReadVariable(address, this)) + 1, this);
         }
 
-        private void OpCodeActorCommand()
+        private void OpActorCommand()
         {
             Byte actorId = GetVarOrDirectByte(0x80);
-            Actor actor = ScummEngine.Instance.ResourceManager.findActor(actorId);
+            Actor actor = ScummEngine.Instance.ResourceManager.FindActor(actorId);
 
             currentOpCode = DataReader.ReadByte();
             while (currentOpCode != 0xFF)
@@ -500,7 +675,7 @@ namespace Scumm.Engine.Resources.Scripts
             }
         }
 
-        private void OpCodeRoomCommand()
+        private void OpRoomCommand()
         {
             currentOpCode = DataReader.ReadByte();
 
@@ -607,7 +782,7 @@ namespace Scumm.Engine.Resources.Scripts
 
         }
 
-        private void OpCodeVerbCommand()
+        private void OpVerbCommand()
         {
             Byte verb = GetVarOrDirectByte(0x80);
 
@@ -719,6 +894,7 @@ namespace Scumm.Engine.Resources.Scripts
                         //vs->imgindex = 0;
                         break;
                     case 22: /* assign object */
+                    case 150:
                         GetVarOrDirectWord(0x80);
                         GetVarOrDirectByte(0x40);
                         //a = getVarOrDirectWord(0x80);
@@ -744,7 +920,7 @@ namespace Scumm.Engine.Resources.Scripts
             //verbMouseOver(0);
         }
 
-        private void OpCodeCursorCommand()
+        private void OpCursorCommand()
         {
             currentOpCode = DataReader.ReadByte();
             switch (currentOpCode)
@@ -781,7 +957,7 @@ namespace Scumm.Engine.Resources.Scripts
             };
         }
 
-        private void OpCodeExpression()
+        private void OpExpression()
         {
             uint resultId = DataReader.ReadUInt16();
             byte operation = DataReader.ReadByte();
@@ -844,7 +1020,7 @@ namespace Scumm.Engine.Resources.Scripts
             ScummEngine.WriteVariable(resultId, finalValue, this);
         }
 
-        private void OpCodeStringCommand()
+        private void OpStringCommand()
         {
             currentOpCode = DataReader.ReadByte();
             switch (currentOpCode)
@@ -876,7 +1052,7 @@ namespace Scumm.Engine.Resources.Scripts
             };
         }
 
-        private void OpCodeResourceCommand()
+        private void OpResourceCommand()
         {
             currentOpCode = DataReader.ReadByte();
 
