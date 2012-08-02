@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Scumm.Engine.Resources.Graphics;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Scumm.Engine.Resources
 {
@@ -20,6 +21,7 @@ namespace Scumm.Engine.Resources
         public int layer;
         string name;
         Vector2 position;
+
         byte roomId;
         int scale;
   
@@ -34,6 +36,16 @@ namespace Scumm.Engine.Resources
             get { return roomId; }
             set { roomId = value; }
         }
+        public Costume Costume
+        {
+            get { return costume; }
+            set { costume = value; }
+        }
+        public Vector2 Position
+        {
+            get { return position; }
+            set { position = value; }
+        }
 
         #endregion
 
@@ -45,6 +57,7 @@ namespace Scumm.Engine.Resources
                 position = Vector2.Zero;
             }
 
+            this.costume = new Costume("");
             this.elevation = 0;
             this.width = 24;
             this.talkColor = 15;
@@ -54,6 +67,11 @@ namespace Scumm.Engine.Resources
             this.standFrame = 3;
             this.talkStartFrame = 4;
             this.talkStopFrame = 5;
+        }
+
+        public void Draw(SpriteBatch spriteBatch)
+        {
+            costume.Draw(spriteBatch, position);
         }
     }
 }

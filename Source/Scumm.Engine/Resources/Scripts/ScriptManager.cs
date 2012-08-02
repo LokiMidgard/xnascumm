@@ -8,9 +8,9 @@ namespace Scumm.Engine.Resources.Scripts
 {
     public class ScriptManager
     {
-        byte currentRoomId;
-
         ResourceManager resourceManager;
+
+        byte currentRoomId;
 
         public ScriptManager(ResourceManager manager)
         {

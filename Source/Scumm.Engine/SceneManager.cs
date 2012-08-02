@@ -18,17 +18,19 @@ namespace Scumm.Engine.Resources
         private List<Actor> currentActors;
         private List<Object> inventory;
 
-        public int InventorySize
+        public List<Actor> CurrentActors
         {
-            get { return inventory.Count; }
+            get { return currentActors; }
         }
-
+        public List<Object> Inventory
+        {
+            get { return inventory; }
+        }
         public SpriteBatch SpriteBatch
         {
             get { return spriteBatch; }
             set { spriteBatch = value; }
         }
-
         public Room CurrentRoom
         {
             get { return currentRoom; }
@@ -84,10 +86,13 @@ namespace Scumm.Engine.Resources
         {
             GraphicsDevice.Clear(Color.Black);
 
-            spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque, SamplerState.PointClamp, DepthStencilState.None, RasterizerState.CullCounterClockwise);
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Opaque, SamplerState.PointClamp, DepthStencilState.None, RasterizerState.CullCounterClockwise);
 
             if (currentRoom != null)
                 currentRoom.Draw(SpriteBatch);
+
+            for(int i = 0; i < currentActors.Count; ++i)
+                currentActors[i].Draw(SpriteBatch);
 
             spriteBatch.End();
 

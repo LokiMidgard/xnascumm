@@ -23,7 +23,7 @@ namespace Scumm.Engine.Resources
         private ResourceIndexEntry[] costumesIndexList;
         private ResourceIndexEntry[] charsetsIndexList;
 
-        private Dictionary<int, Actor> actors;
+        private Actor[] actors;
         private Object[] objects;
 
         private ScummBinaryReader dataFileReader;
@@ -38,7 +38,9 @@ namespace Scumm.Engine.Resources
 
             loaders = new Dictionary<string, ResourceLoader>();
 
-            actors = new Dictionary<int, Actor>();
+            actors = new Actor[13];
+            for (int i = 0; i < 13; ++i)
+                actors[i] = new Actor();
         }
 
         public void AddLoader(String key, ResourceLoader loader)
@@ -259,6 +261,9 @@ namespace Scumm.Engine.Resources
                     // Change the position of the stream
                     this.dataFileReader.BaseStream.Position = roomOffset;
                     this.dataFileReader.BaseStream.Seek(resourceReference.Offset, SeekOrigin.Current);
+
+                    if(!parameters.ContainsKey("RoomId"))
+                        parameters.Add("RoomId", resourceReference.RoomId);
                 }
                 
                 // Load the resource
@@ -309,7 +314,7 @@ namespace Scumm.Engine.Resources
             }
         }
 
-        private ResourceIndexEntry FindIndexFromResourceId(string resourceType, int resourceId)
+        public ResourceIndexEntry FindIndexFromResourceId(string resourceType, int resourceId)
         {
             if (resourceType == "COST")
             {
@@ -329,10 +334,8 @@ namespace Scumm.Engine.Resources
 
         public Actor FindActor(int actorId)
         {
-            if(!(actors.ContainsKey(actorId)))
-            {
-                actors.Add(actorId, new Actor());
-            }
+            if (actorId >= actors.Count())
+                throw new IndexOutOfRangeException();
             return actors[actorId];
         }
 

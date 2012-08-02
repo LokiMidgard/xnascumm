@@ -132,8 +132,7 @@ namespace Scumm.Engine.Resources.Scripts
         }
 
         // These functions are used because many opcodes have variations - arguments change from direct values to variable references
-        // According to the current opcode and the mask, we can decide whether to use a reference or a direct value
-        // While these functions are not very elegant, their usage greatly simplifies implementation
+        // according to the current opcode and the mask. While these functions are not very elegant, their usage greatly simplifies implementation
         public Byte GetVarOrDirectByte(Byte mask)
         {
             if ((this.currentOpCode & mask) != 0)

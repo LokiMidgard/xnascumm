@@ -77,7 +77,7 @@ namespace Scumm.Engine
             ResourceManager.AddLoader("SCRP", new ScriptLoader(ScriptManager, SceneManager));
             ResourceManager.AddLoader("STRN", new StringLoader());
             ResourceManager.AddLoader("CHRS", new CharsetLoader());
-            ResourceManager.AddLoader("COST", new CostumeLoader());
+            ResourceManager.AddLoader("COST", new CostumeLoader(GraphicsDevice));
             ResourceManager.AddLoader("VERB", new VerbLoader());
             ResourceManager.AddLoader("OBJC", new ObjectLoader());
 

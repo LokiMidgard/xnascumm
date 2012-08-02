@@ -13,7 +13,7 @@
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <XnaFrameworkVersion>v4.0</XnaFrameworkVersion>
     <XnaPlatform>Windows</XnaPlatform>
-    <XnaProfile>HiDef</XnaProfile>
+    <XnaProfile>Reach</XnaProfile>
     <XnaCrossPlatformGroupID>1b74aa6c-55a8-4a2a-bdfa-8094bfb31670</XnaCrossPlatformGroupID>
     <XnaOutputType>Library</XnaOutputType>
   </PropertyGroup>
@@ -99,6 +99,7 @@
     <Compile Include="Resources\Graphics\Charset.cs" />
     <Compile Include="Resources\Graphics\CharsetLoader.cs" />
     <Compile Include="Resources\Graphics\Costume.cs" />
+    <Compile Include="Resources\Graphics\CostumeFrame.cs" />
     <Compile Include="Resources\Graphics\CostumeLoader.cs" />
     <Compile Include="Resources\Graphics\Image.cs" />
     <Compile Include="Resources\Graphics\EncoderType.cs" />

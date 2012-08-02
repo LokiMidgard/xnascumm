@@ -36,7 +36,8 @@ namespace Scumm.Engine.Resources
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(Texture, new Rectangle(0, 0, Width*2, Height*2), Color.White);
+            if(Texture != null)
+                spriteBatch.Draw(Texture, new Rectangle(0, 0, Width*2, Height*2), Color.White);
         }
     }
 }

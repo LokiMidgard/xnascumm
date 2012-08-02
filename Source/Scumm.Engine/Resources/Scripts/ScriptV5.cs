@@ -86,6 +86,9 @@ namespace Scumm.Engine.Resources.Scripts
 
         private void StartScene(byte roomId)
         {
+            if (roomId == 0)
+                return;
+
             scriptManager.WriteVariable((uint)VariableV5.VAR_NEW_ROOM, roomId, this);
             RunExitScript(scriptManager.CurrentRoomId);
 
@@ -94,11 +97,17 @@ namespace Scumm.Engine.Resources.Scripts
 
             scriptManager.CurrentRoomId = roomId;
 
-            if (roomId != 0)
+            // update scene manager
+            sceneManager.CurrentRoom = resourceManager.Load<Room>("ROOM", roomId);
+            for (int i = 0; i < 13; ++i)
             {
-                sceneManager.CurrentRoom = resourceManager.Load<Room>("ROOM", roomId);
-                RunEntryScript(roomId);
+                Actor actor = resourceManager.FindActor(i);
+                if (actor.RoomID == roomId)
+                    sceneManager.CurrentActors.Add(actor);
             }
+
+            RunEntryScript(roomId);
+            
         }
 
         private void RunExitScript(byte roomId)
@@ -310,7 +319,7 @@ namespace Scumm.Engine.Resources.Scripts
             var owner = GetVarOrDirectByte(0x80);
 
             int count = 0;
-            for (int i = 0; i < sceneManager.InventorySize; ++i)
+            for (int i = 0; i < sceneManager.Inventory.Count; ++i)
             {
                 Object obj = sceneManager.GetInventoryObject(i);
                 if (obj != null && obj.getOwnerState() == owner)
@@ -327,7 +336,7 @@ namespace Scumm.Engine.Resources.Scripts
             var b = GetVarOrDirectByte(0x40);
 
             int count = 1;
-            for (int i = 0; i < sceneManager.InventorySize; ++i)
+            for (int i = 0; i < sceneManager.Inventory.Count; ++i)
             {
                 Object obj = sceneManager.GetInventoryObject(i);
                 if (obj != null && obj.getOwnerState() == owner && count++ == b)
@@ -565,8 +574,8 @@ namespace Scumm.Engine.Resources.Scripts
                 {
                     // costume
                     case 1:
-                        Byte costume = GetVarOrDirectByte(0x80);
-                        //setActorCostume(a, );
+                        Byte costumeId = GetVarOrDirectByte(0x80);
+                        actor.Costume = resourceManager.Load<Costume>("COST", costumeId);
                         break;
                     case 2: /* walkspeed */
                         GetVarOrDirectByte(0x80);
