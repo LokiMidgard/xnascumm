@@ -33,6 +33,36 @@ namespace Scumm.Engine.IO
             return str;
         }
 
+        public override byte ReadByte()
+        {
+            ResetBitCursor();
+            return base.ReadByte();
+        }
+
+        public override short ReadInt16()
+        {
+            ResetBitCursor();
+            return base.ReadInt16();
+        }
+
+        public override ushort ReadUInt16()
+        {
+            ResetBitCursor();
+            return base.ReadUInt16();
+        }
+
+        public override int ReadInt32()
+        {
+            ResetBitCursor();
+            return base.ReadInt32();
+        }
+
+        public override uint ReadUInt32()
+        {
+            ResetBitCursor();
+            return base.ReadUInt32();
+        }
+
         public uint ReadUInt32BigEndian()
         {
             this.FillInternalBuffer(4);

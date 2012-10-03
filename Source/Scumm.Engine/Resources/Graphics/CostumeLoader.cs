@@ -6,12 +6,13 @@ using Scumm.Engine.Resources.Loaders;
 using Scumm.Engine.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.IO;
 
 namespace Scumm.Engine.Resources.Graphics
 {
     class CostumeLoader : ResourceLoader
     {
-        GraphicsDevice graphicsDevice;
+        private GraphicsDevice graphicsDevice;
 
         public CostumeLoader(GraphicsDevice device)
         {
@@ -20,77 +21,191 @@ namespace Scumm.Engine.Resources.Graphics
 
         public override Resource LoadResourceData(ScummBinaryReader reader, string resourceId, IDictionary<string, object> parameters)
         {
-            Costume costume = new Costume(resourceId);
-
+            // TODO: If the anim is mirrored, point to the same textures and do a matrix transform while rendering the costume
+            var costume = new Costume(resourceId);
+            
             // Read Room Header information
             if (reader.FindDataBlock("COST") == 0)
             {
                 throw new InvalidOperationException("Could not find the costume header block.");
             }
 
+            reader.BaseStream.Position -= 6;
             var startOffset = reader.BaseStream.Position;
-            //reader.BaseStream.Position += 6;
+
+            var size = reader.ReadUInt32();
+            var test = ((char)reader.ReadByte()).ToString() + ((char)reader.ReadByte()).ToString();
 
             var animationsCount = reader.ReadByte();
+
             var format = reader.ReadByte();
+            var paletteSize = ((format & 0x7F) == 0x58 || (format & 0x7F) == 0x60) ? 16 : 32;
+            var containsRedirection = ((format & 0x7E) == 0x60);
+            var mirrorWestPositions = (format & 0x80) == 0;
 
-            var paletteSize = ((format & 1) == 0) ? 16 : 32;
-            var mirror = ((format & 128) == 0);
+            // TODO: Decode bit 7
 
-            // read palette
+            // TODO : Read the full palette
             var palette = new byte[paletteSize];
-            for (int i = 0; i < paletteSize; ++i)
+
+            for (int i = 0; i < paletteSize; i++)
             {
                 palette[i] = reader.ReadByte();
             }
-            //for (int i = 0; i < 8; ++i)
-            //    reader.ReadByte();
 
-            reader.ReadUInt16();
-            var offset = reader.ReadUInt16();
+            var animationCommandOffset = reader.ReadUInt16();
 
-            // Load Test Frame
-            reader.BaseStream.Position = startOffset + offset - 6;
-            offset = reader.ReadUInt16();
+            // Read limb offsets
+            var limbOffsets = new ushort[16];
+
+            for (int i = 0; i < 16; i++)
+            {
+                limbOffsets[i] = reader.ReadUInt16();
+            }
+
+            // Read animation offsets
+            var animationOffsets = new ushort[animationsCount];
+
+            for (int i = 0; i < animationOffsets.Length; i++)
+            {
+                animationOffsets[i] = reader.ReadUInt16();
+            }
 
             // Load the room palette associated with the costume
-            var roomPalette = resourceManager.Load<Room>("ROOM", (byte)parameters["RoomId"]).Palette;
+            var roomPalette = this.resourceManager.Load<Room>("ROOM", (byte)parameters["RoomId"]).Palette;
 
-            reader.BaseStream.Position = startOffset + offset - 6;
-
-            // Load a test frame
-            LoadTestFrame(reader, costume, palette, roomPalette, mirror);
+            for (int i = 4; i < animationsCount; i++)
+            {
+                var animation = LoadAnimation(reader, i, startOffset, animationOffsets, limbOffsets, animationCommandOffset, palette, roomPalette, containsRedirection, (i % 4) == 0 && mirrorWestPositions);
+                costume.Animations.Add(animation);
+            }
 
             return costume;
         }
 
-        private void LoadTestFrame(ScummBinaryReader reader, Costume costume, byte[] palette, Color[] roomPalette, bool containsRedirection)
+        private CostumeAnimation LoadAnimation(ScummBinaryReader reader, int animationIndex, long startOffset, ushort[] animationOffsets, ushort[] limbOffsets, ushort animationCommandOffset, byte[] palette, Color[] roomPalette, bool containsRedirection, bool mirror)
         {
-            var width = reader.ReadUInt16();
-            var height = reader.ReadUInt16();
-            var relativeX = reader.ReadInt16();
-            var relativeY = reader.ReadInt16();
-            var movementX = reader.ReadInt16();
-            var movementY = reader.ReadInt16();
-
-            if (containsRedirection)
+            if (animationOffsets[animationIndex] == 0)
             {
-                var redirectionLimb = reader.ReadByte();
-                var redirectionPict = reader.ReadByte();
+                return null;
             }
 
-            //  Create the texture data array
-            var textureData = DecodeImageData(reader, width, height, palette, roomPalette);
+            reader.BaseStream.Position = startOffset + animationOffsets[animationIndex];
 
-            costume.TestTexture = new Microsoft.Xna.Framework.Graphics.Texture2D(graphicsDevice, width, height, false, Microsoft.Xna.Framework.Graphics.SurfaceFormat.Color);
-            costume.TestTexture.SetData(textureData);
+            var costumeAnimation = new CostumeAnimation();
+            costumeAnimation.IsMirrored = mirror;
+
+            var currentFrameIndex = 0;
+            var framesCount = 0;
+            var startAnimationPosition = reader.BaseStream.Position;
+
+            while (currentFrameIndex < framesCount || currentFrameIndex == 0)
+            {
+                var mask = reader.ReadUInt16();
+
+                var costumeFrame = new CostumeFrame();
+                var imageData = new LayeredImageData();
+
+                var i = 0;
+
+                do
+                {
+                    if ((mask & 0x8000) != 0)
+                    {
+                        var startAnimationCommandOffset = reader.ReadUInt16();
+
+                        if (startAnimationCommandOffset != 0xFFFF)
+                        {
+                            var flags = reader.ReadByte();
+
+                            var loop = flags & 0x8000;
+                            var endFrame = flags & 0x7F;
+
+                            if (currentFrameIndex == 0 && framesCount == 0)
+                            {
+                                framesCount = Math.Max(framesCount, endFrame) + 1;
+                            }
+
+                            var oldStreamPosition = reader.BaseStream.Position;
+                            reader.BaseStream.Position = startOffset + animationCommandOffset + startAnimationCommandOffset + Math.Min(currentFrameIndex, endFrame);
+
+                            var animationCommandValue = reader.ReadByte();
+
+                            if (animationCommandValue == 0x71)
+                            {
+                                // TODO: Handle special commands (sounds, etc.)
+                            }
+
+                            else if (animationCommandValue == 0x7A)
+                            {
+                                // TODO: Implement start command
+                            }
+
+                            else if (animationCommandValue == 0x79)
+                            {
+                                // TODO: Implement stopped command
+                            }
+
+                            else
+                            {
+                                reader.BaseStream.Position = startOffset + limbOffsets[i] + animationCommandValue * 2;
+                                var pictOffset = reader.ReadUInt16();
+
+                                reader.BaseStream.Position = startOffset + pictOffset;
+
+                                var width = reader.ReadUInt16();
+                                var height = reader.ReadUInt16();
+                                var relativeX = reader.ReadInt16();
+                                var relativeY = reader.ReadInt16();
+                                var movementX = reader.ReadInt16();
+                                var movementY = reader.ReadInt16();
+
+                                if (containsRedirection)
+                                {
+                                    var redirectionLimb = reader.ReadByte();
+                                    var redirectionPict = reader.ReadByte();
+                                }
+
+                                imageData.CreateLayer(width, height, new Vector2(relativeX, relativeY));
+
+                                DecodeImageData(reader, imageData, width, height, palette, roomPalette);
+                            }
+
+                            reader.BaseStream.Position = oldStreamPosition;
+                        }
+                    }
+
+                    mask = (ushort)(mask << 1);
+                    i++;
+
+                } while ((mask & 0xFFFF) != 0);
+
+                costumeFrame.FrameType = CostumeFrameType.Frame;
+
+                // TODO: Fill offset and movement vector
+
+                var textureData = imageData.GetBytes();
+                costumeFrame.Data = new Microsoft.Xna.Framework.Graphics.Texture2D(this.graphicsDevice, imageData.Width, imageData.Height, false, Microsoft.Xna.Framework.Graphics.SurfaceFormat.Color);
+                costumeFrame.Data.SetData(textureData);
+
+                costumeAnimation.Frames.Add(costumeFrame);
+
+                if (!Directory.Exists("DebugAnims"))
+                {
+                    Directory.CreateDirectory("DebugAnims");
+                }
+
+                costumeFrame.Data.SaveAsPng(File.Create(string.Format("DebugAnims\\Anim{0}_{1}.png", animationIndex, currentFrameIndex)), costumeFrame.Data.Width, costumeFrame.Data.Height);
+
+                reader.BaseStream.Position = startAnimationPosition;
+                currentFrameIndex++;
+            }
+
+            return costumeAnimation;
         }
 
-        // TODO: Move that method in the graphics namespace as a loader?
-        private byte[] DecodeImageData(ScummBinaryReader reader, int width, int height, byte[] palette, Color[] roomPalette)
+        private void DecodeImageData(ScummBinaryReader reader, LayeredImageData imageData, int width, int height, byte[] palette, Color[] roomPalette)
         {
-            var imageData = new byte[width * height * 4];
-
             byte shift;
             byte mask;
 
@@ -110,10 +225,8 @@ namespace Scumm.Engine.Resources.Graphics
 
             bool end = false;
 
-            //while (end == false)
-            for(int i = 0; i < 100; ++i)
+            while (end == false)
             {
-                
                 var rep = reader.ReadByte();
                 var colorPaletteIndex = (byte)(rep >> shift);
                 Color color = Color.Black;
@@ -132,12 +245,10 @@ namespace Scumm.Engine.Resources.Graphics
 
                 while (rep > 0)
                 {
-                    var pixelIndex = y * width * 4 + x * 4;
-
-                    imageData[pixelIndex] = color.R;
-                    imageData[pixelIndex + 1] = color.G;
-                    imageData[pixelIndex + 2] = color.B;
-                    imageData[pixelIndex + 3] = (colorPaletteIndex == 0) ? (byte)0 : (byte)255;
+                    if (colorPaletteIndex != 0)
+                    {
+                        imageData.SetPixel(x, y, color);
+                    }
 
                     rep--;
                     y++;
@@ -154,8 +265,6 @@ namespace Scumm.Engine.Resources.Graphics
                     }
                 }
             }
-
-            return imageData;
         }
     }
 }

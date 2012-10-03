@@ -69,6 +69,13 @@ namespace Scumm.Engine.Resources
             this.talkStopFrame = 5;
         }
 
+        public void PutActor(int x, int y)
+        {
+            // TODO : Complete this method to adjust the position based on various parameters (see ScummVM source code)
+
+            this.position = new Vector2(x, y);
+        }
+
         public void Draw(SpriteBatch spriteBatch)
         {
             costume.Draw(spriteBatch, position);

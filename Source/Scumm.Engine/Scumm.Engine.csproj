@@ -99,10 +99,13 @@
     <Compile Include="Resources\Graphics\Charset.cs" />
     <Compile Include="Resources\Graphics\CharsetLoader.cs" />
     <Compile Include="Resources\Graphics\Costume.cs" />
+    <Compile Include="Resources\Graphics\CostumeAnimation.cs" />
     <Compile Include="Resources\Graphics\CostumeFrame.cs" />
+    <Compile Include="Resources\Graphics\CostumeFrameType.cs" />
     <Compile Include="Resources\Graphics\CostumeLoader.cs" />
     <Compile Include="Resources\Graphics\Image.cs" />
     <Compile Include="Resources\Graphics\EncoderType.cs" />
+    <Compile Include="Resources\Graphics\LayeredImageData.cs" />
     <Compile Include="Resources\Graphics\ImageLoader.cs" />
     <Compile Include="Resources\Graphics\Text.cs" />
     <Compile Include="Resources\Object.cs" />

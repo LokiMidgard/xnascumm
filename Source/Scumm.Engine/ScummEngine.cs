@@ -48,7 +48,8 @@ namespace Scumm.Engine
         public ScummEngine(string gamePath, string gameId, int scummVersion)
         {
             // Log file
-            logFile = new StreamWriter("logFileMy.txt");
+            logFile = new StreamWriter("Scumm.log");
+            logFile.AutoFlush = true;
 
             // Initialize scene manager
             SceneManager = new SceneManager(this);
@@ -74,7 +75,7 @@ namespace Scumm.Engine
             // Add loaders
             ResourceManager.AddLoader("ROOM", new RoomLoader());
             ResourceManager.AddLoader("RMIM", new ImageLoader(GraphicsDevice));
-            ResourceManager.AddLoader("SCRP", new ScriptLoader(ScriptManager, SceneManager));
+            ResourceManager.AddLoader("SCRP", new ScriptLoader(ScriptManager, SceneManager, this.logFile));
             ResourceManager.AddLoader("STRN", new StringLoader());
             ResourceManager.AddLoader("CHRS", new CharsetLoader());
             ResourceManager.AddLoader("COST", new CostumeLoader(GraphicsDevice));
@@ -84,7 +85,7 @@ namespace Scumm.Engine
             // Read game files
             ResourceManager.LoadGame();
 
-            this.ScriptManager.Run(0);
+            this.ScriptManager.Run(456);
         }
 
         protected override void UnloadContent()

@@ -16,12 +16,14 @@ namespace Scumm.Engine.Resources
         {
             ScummString scummString = new ScummString(resourceId);
 
+            var data = new List<byte>();
+
             byte b;
             b = reader.ReadByte();
             
             while (b != 0x00)
             {
-                scummString.Stream = scummString.Stream + (char)b;
+                data.Add(b);
                 b = reader.ReadByte();
 
                 if (b == 0xFF)
@@ -29,11 +31,11 @@ namespace Scumm.Engine.Resources
                     for (int i = 0; i < 3; ++i)
                     {
                         b = reader.ReadByte();
-                        scummString.Stream = scummString.Stream + (char)b;
+                        data.Add(b);
                     }
                 }
             }
-            
+            scummString.Stream = new string(System.Text.Encoding.GetEncoding("IBM437").GetChars(data.ToArray()));
             return scummString;
         }
     }

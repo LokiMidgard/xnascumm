@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Scumm.Engine.Resources.Loaders;
 using Scumm.Engine.IO;
+using System.IO;
 
 namespace Scumm.Engine.Resources.Scripts
 {
@@ -11,11 +12,13 @@ namespace Scumm.Engine.Resources.Scripts
     {
         ScriptManager scriptManager;
         SceneManager sceneManager;
+        StreamWriter logFile;
 
-        public ScriptLoader(ScriptManager scriptMngr, SceneManager sceneMngr)
+        public ScriptLoader(ScriptManager scriptMngr, SceneManager sceneMngr, StreamWriter logFile)
         {
             scriptManager = scriptMngr;
             sceneManager = sceneMngr;
+            this.logFile = logFile;
         }
 
         public override Resource LoadResourceData(ScummBinaryReader reader, string resourceId, IDictionary<string, object> parameters)
@@ -37,7 +40,7 @@ namespace Scumm.Engine.Resources.Scripts
 
             // Read the opcode blocks
             var data = reader.ReadBytes((int)blockSize - 8);
-            var script = new ScriptV5(resourceId, data, scriptManager, resourceManager, sceneManager);
+            var script = new ScriptV5(resourceId, data, scriptManager, resourceManager, sceneManager, this.logFile);
             return script;
         }
     }

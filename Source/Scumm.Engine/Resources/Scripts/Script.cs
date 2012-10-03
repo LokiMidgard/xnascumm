@@ -18,13 +18,15 @@ namespace Scumm.Engine.Resources.Scripts
         protected ScriptManager scriptManager;
         protected SceneManager sceneManager;
         protected ResourceManager resourceManager;
-        
-        protected Script(string resourceId, byte[] data, ScriptManager scriptMngr, ResourceManager resourceMngr, SceneManager sceneMngr)
+        protected StreamWriter logFile;
+
+        protected Script(string resourceId, byte[] data, ScriptManager scriptMngr, ResourceManager resourceMngr, SceneManager sceneMngr, StreamWriter logFile)
             : base(resourceId)
         {
             scriptManager = scriptMngr;
             sceneManager = sceneMngr;
             resourceManager = resourceMngr;
+            this.logFile = logFile;
 
             this.DataReader = new ScummBinaryReader(new MemoryStream(data));
             this.Status = ScriptStatus.Stopped;
@@ -71,6 +73,7 @@ namespace Scumm.Engine.Resources.Scripts
 
         public void Run(int[] arguments, bool resetScriptCursor)
         {
+            this.logFile.WriteLine("---------- Running Script {0} -----------", this.ResourceId);
             this.Status = ScriptStatus.Running;
 
             // Init local variables
@@ -99,6 +102,8 @@ namespace Scumm.Engine.Resources.Scripts
             {
                 this.Status = ScriptStatus.Stopped;
             }
+
+            this.logFile.WriteLine("---------- Script {0} stopped -----------", this.ResourceId);
         }
 
         public int ReadLocalVariable(uint variableAddress)
@@ -170,13 +175,13 @@ namespace Scumm.Engine.Resources.Scripts
         public Int16[] GetWordVararg()
         {
             Int16[] result = new Int16[16];
-            currentOpCode = DataReader.ReadByte();
+            var subOpCode = DataReader.ReadByte();
 
             int length = 0;
-            while (currentOpCode != 0xFF)
+            while (subOpCode != 0xFF)
             {
                 result[length++] = GetVarOrDirectWord(0x80);
-                currentOpCode = DataReader.ReadByte();
+                subOpCode = DataReader.ReadByte();
             }
             return result;
         }

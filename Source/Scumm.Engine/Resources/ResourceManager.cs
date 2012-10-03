@@ -29,12 +29,16 @@ namespace Scumm.Engine.Resources
         private ScummBinaryReader dataFileReader;
         private Dictionary<string, ResourceLoader> loaders;
 
+        internal Dictionary<string, Resource> cache;
+
         public ResourceManager(string gamePath, string gameId, int scummVersion)
         {
             // Init properties
             this.GamePath = gamePath;
             this.GameId = gameId;
             this.ScummVersion = scummVersion;
+
+            this.cache = new Dictionary<string, Resource>();
 
             loaders = new Dictionary<string, ResourceLoader>();
 
@@ -241,40 +245,57 @@ namespace Scumm.Engine.Resources
             return Load<T>(resourceType, resourceId, reader, emptyParameters);
         }
 
-        public T Load<T>(string resourceType, byte resourceId, IDictionary<string, object> parameters) where T : Resource
+        public T Load<T>(string resourceType, int resourceId, IDictionary<string, object> parameters) where T : Resource
         {
-            if (this.loaders.ContainsKey(resourceType))
-            {
-                var loader = this.loaders[resourceType];
+            var cacheKey = string.Format("{0}_{1}", resourceType, resourceId);
 
-                if (resourceType == "ROOM")
+            if (!this.cache.ContainsKey(cacheKey))
+            {
+                if (this.loaders.ContainsKey(resourceType))
                 {
-                    var roomOffset = this.roomsIndexList[resourceId];
-                    this.dataFileReader.BaseStream.Position = roomOffset;
-                }
-                else
-                {
+                    var loader = this.loaders[resourceType];
+                    ResourceIndexEntry roomReference;
+
+                    if (resourceType == "ROOM")
+                    {
+                        roomReference = new ResourceIndexEntry((byte)resourceId, 0);
+                    }
+
+                    else
+                    {
+                        roomReference = FindIndexFromResourceId(resourceType, resourceId);
+                    }
+
                     // Find the room offset
-                    ResourceIndexEntry resourceReference = FindIndexFromResourceId(resourceType, resourceId);
-                    var roomOffset = this.roomsIndexList[resourceReference.RoomId];
+                    var roomOffset = this.roomsIndexList[roomReference.RoomId];
 
                     // Change the position of the stream
                     this.dataFileReader.BaseStream.Position = roomOffset;
-                    this.dataFileReader.BaseStream.Seek(resourceReference.Offset, SeekOrigin.Current);
 
-                    if(!parameters.ContainsKey("RoomId"))
-                        parameters.Add("RoomId", resourceReference.RoomId);
+                    if (resourceType != "ROOM")
+                    {
+                        this.dataFileReader.BaseStream.Seek(roomReference.Offset, SeekOrigin.Current);
+                    }
+
+                    // Load the resource
+                    var resource = loader.LoadResourceData(dataFileReader, cacheKey, parameters);
+
+                    // Add the created resource to the cache
+                    this.cache.Add(cacheKey, resource);
+
+                    // Return the resource
+                    return (T)resource;
                 }
-                
-                // Load the resource
-                var resource = loader.LoadResourceData(dataFileReader, resourceType+Convert.ToString(resourceId), parameters);
 
-                // Return the resource
-                return (T)resource;
+                else
+                {
+                    throw new InvalidOperationException(string.Format("No resource loaders for blockType '{0}' were found.", resourceType));
+                }
             }
+
             else
             {
-                throw new InvalidOperationException(string.Format("No resource loaders for blockType '{0}' were found.", resourceType));
+                return (T)this.cache[cacheKey];
             }
         }
 
