@@ -108,7 +108,7 @@ namespace Scumm.Engine.Resources.Scripts
 
         public int ReadLocalVariable(uint variableAddress)
         {
-            if(first && ResourceId == "SCRP1") {
+            if(first && ResourceId == "SCRP_1") {
                 first = false;
                 return 1;
             }
@@ -138,16 +138,16 @@ namespace Scumm.Engine.Resources.Scripts
 
         // These functions are used because many opcodes have variations - arguments change from direct values to variable references
         // according to the current opcode and the mask. While these functions are not very elegant, their usage greatly simplifies implementation
-        public Byte GetVarOrDirectByte(Byte mask)
+        public Byte GetVarOrDirectByte(Byte mask, int opCode)
         {
-            if ((this.currentOpCode & mask) != 0)
+            if ((opCode & mask) != 0)
                 return Convert.ToByte(scriptManager.ReadVariable(GetVariableAddress(), this));
             else
                 return DataReader.ReadByte();
         }
-        public Int16 GetVarOrDirectWord(Byte mask)
+        public Int16 GetVarOrDirectWord(Byte mask, int opCode)
         {
-            if ((this.currentOpCode & mask) != 0)
+            if ((opCode & mask) != 0)
                 return Convert.ToInt16(scriptManager.ReadVariable(GetVariableAddress(), this));
             else
                 return DataReader.ReadInt16();
@@ -180,7 +180,7 @@ namespace Scumm.Engine.Resources.Scripts
             int length = 0;
             while (subOpCode != 0xFF)
             {
-                result[length++] = GetVarOrDirectWord(0x80);
+                result[length++] = GetVarOrDirectWord(0x80, subOpCode);
                 subOpCode = DataReader.ReadByte();
             }
             return result;

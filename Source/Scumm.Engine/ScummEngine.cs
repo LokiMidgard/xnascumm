@@ -18,6 +18,9 @@ namespace Scumm.Engine
 {
     public class ScummEngine : Game
     {
+        // for debugging purposes
+        public static SpriteFont font;
+
         private static ScummEngine instance;      
         private SceneManager sceneManager;
         private ResourceManager resourceManager;
@@ -82,10 +85,13 @@ namespace Scumm.Engine
             ResourceManager.AddLoader("VERB", new VerbLoader());
             ResourceManager.AddLoader("OBJC", new ObjectLoader());
 
+            // Create font
+            font = Content.Load<SpriteFont>("Scumm.PCContent/Font");
+
             // Read game files
             ResourceManager.LoadGame();
 
-            this.ScriptManager.Run(456);
+            this.ScriptManager.Run(0);
         }
 
         protected override void UnloadContent()

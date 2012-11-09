@@ -25,6 +25,7 @@ namespace Scumm.Engine.Resources
 
         private Actor[] actors;
         private Object[] objects;
+        private Verb[] verbs;
 
         private ScummBinaryReader dataFileReader;
         private Dictionary<string, ResourceLoader> loaders;
@@ -45,6 +46,10 @@ namespace Scumm.Engine.Resources
             actors = new Actor[13];
             for (int i = 0; i < 13; ++i)
                 actors[i] = new Actor();
+
+            verbs = new Verb[100];
+            for (int i = 0; i < 100; ++i)
+                verbs[i] = new Verb("");
         }
 
         public void AddLoader(String key, ResourceLoader loader)
@@ -365,6 +370,13 @@ namespace Scumm.Engine.Resources
             if (objectId >= objects.Count()) 
                 throw new IndexOutOfRangeException();
             return objects[objectId];
+        }
+
+        public Verb FindVerb(int verbId)
+        {
+            if (verbId >= verbs.Count())
+                throw new IndexOutOfRangeException();
+            return verbs[verbId];
         }
     }
 }

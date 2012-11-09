@@ -17,7 +17,12 @@ namespace Scumm.Engine.Resources
         private Room currentRoom;
         private List<Actor> currentActors;
         private List<Object> inventory;
+        private List<Verb> verbs;
 
+        public List<Verb> Verbs
+        {
+            get { return verbs; }
+        }
         public List<Actor> CurrentActors
         {
             get { return currentActors; }
@@ -48,6 +53,7 @@ namespace Scumm.Engine.Resources
 
             currentActors = new List<Actor>();
             inventory = new List<Object>();
+            verbs = new List<Verb>();
         }
 
         protected override void LoadContent()
@@ -58,28 +64,6 @@ namespace Scumm.Engine.Resources
         public override void Update(GameTime gameTime)
         {
             eventManager.Update();
-            // Allows the game to exit
-            //if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
-            //    this.Exit();
-
-            //if (eventManager.Clicked(Keys.Left))
-            //{
-            //    if (curRoomIndex > 0)
-            //    {
-            //        --curRoomIndex;
-            //        currentRoom = ScummEngine.Instance.ResourceManager.Load<Room>("ROOM", curRoomIndex);
-            //    }
-            //}
-            //
-            //if (eventManager.Clicked(Keys.Right))
-            //{
-            //    if (curRoomIndex < 82)
-            //    {
-            //        ++curRoomIndex;
-            //        currentRoom = ScummEngine.Instance.ResourceManager.Load<Room>("ROOM", curRoomIndex);
-            //    }
-            //}
-
         }
 
         public override void Draw(GameTime gameTime)
@@ -94,8 +78,10 @@ namespace Scumm.Engine.Resources
             for(int i = 0; i < currentActors.Count; ++i)
                 currentActors[i].Draw(SpriteBatch);
 
-            spriteBatch.End();
+            for (int i = 1; i < verbs.Count; ++i)
+                verbs[i].Draw(SpriteBatch);
 
+            spriteBatch.End();
         }
 
         public void AddObjectToInventory(Object obj)
