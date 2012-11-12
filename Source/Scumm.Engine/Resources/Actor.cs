@@ -76,6 +76,10 @@ namespace Scumm.Engine.Resources
             this.position = new Vector2(x, y);
         }
 
+        public void Talk()
+        {
+        }
+
         public void Draw(SpriteBatch spriteBatch)
         {
             costume.Draw(spriteBatch, position);

@@ -23,6 +23,7 @@ namespace Scumm.Engine.Resources.Scripts
             opCodeHandlers[0x13] = new Action(OpActorCommand);
             opCodeHandlers[0x14] = new Action(OpPrint);
             opCodeHandlers[0x18] = new Action(OpJumpRelative);
+            opCodeHandlers[0x19] = new Action(OpDoSentence);
             opCodeHandlers[0x1A] = new Action(OpMove);
             opCodeHandlers[0x25] = new Action(OpPickupObject);
             opCodeHandlers[0x26] = new Action(OpSetVariableRange);
@@ -77,22 +78,26 @@ namespace Scumm.Engine.Resources.Scripts
             {
                 try
                 {
-                    if(currentOpCode != 39 && currentOpCode != 26)
-                        Console.WriteLine("{0} : {1}", ResourceId, currentOpCode);
+                    if(currentOpCode != 39 && currentOpCode != 26 && ResourceId != null)
+                        this.LogOpCodeInformations("{0} : {1}", ResourceId, currentOpCode);
                     opCodeHandlers[currentOpCode]();
                 }
 
 				catch (Exception e)
 				{
                     Console.WriteLine("ERROR: {0}", e.Message);
+                    #if !COMPARE
                     this.LogOpCodeInformations("ERROR: {0}", e.Message);
+                    #endif
 				}
             }
 
             else if (currentOpCode != 0xFF)
             {
                 Console.WriteLine("Unknown opcode {0:X2}", currentOpCode);
+                #if !COMPARE
                 this.LogOpCodeInformations("Unknown opcode");
+                #endif
             }
         }
 
@@ -182,11 +187,11 @@ namespace Scumm.Engine.Resources.Scripts
             }
         }
 
-        private void DecodeParseString(int actor)
+        private void DecodeParseString(int actorId)
         {
             int textSlot;
 
-            switch (actor)
+            switch (actorId)
             {
                 case 252:
                     textSlot = 3;
@@ -246,10 +251,13 @@ namespace Scumm.Engine.Resources.Scripts
                         GetVarOrDirectWord(0x40, currentOpCode);
                         break;
                     case 15:
-                        //_messagePtr = _scriptPointer;
+                        Byte b = DataReader.ReadByte();
                         switch (textSlot)
                         {
-                            //case 0: actorTalk(); break;
+                            case 0:
+                                Actor actor = resourceManager.FindActor(actorId);
+                                actor.Talk(); 
+                                break;
                             //case 1: drawString(1); break;
                             //case 2: unkMessage1(); break;
                             //case 3: unkMessage2(); break;
@@ -275,13 +283,24 @@ namespace Scumm.Engine.Resources.Scripts
 
         #region Ops
 
+        private void OpDoSentence()
+        {
+            Byte a = GetVarOrDirectByte(0x80, currentOpCode);
+            if(a == 254)
+                return;
+            GetVarOrDirectWord(0x40, currentOpCode);
+            GetVarOrDirectWord(0x20, currentOpCode);
+        }
+
         private void OpMove()
         {
             uint variableAddress = GetVariableAddress();
             Int16 variableValue = GetVarOrDirectWord(0x80, currentOpCode);
 
             scriptManager.WriteVariable(variableAddress, variableValue, this);
+            #if !COMPARE
             this.LogVariable(variableAddress, " = {0}", variableValue);
+            #endif
         }
 
         private void OpPrint()
@@ -392,7 +411,9 @@ namespace Scumm.Engine.Resources.Scripts
 
             if (scriptId < 200)
             {
+                #if !COMPARE
                 this.LogOpCodeInformations("RunScript({0})", scriptId);
+                #endif
                 Script script = resourceManager.Load<Script>("SCRP", scriptId);
                 script.Run();
             }
@@ -447,21 +468,21 @@ namespace Scumm.Engine.Resources.Scripts
             switch (subOpCode & 0x1F)
             {
                 case 1:
-                    a = GetVarOrDirectByte(0x80, currentOpCode);
-                    b = GetVarOrDirectByte(0x40, currentOpCode);
+                    a = GetVarOrDirectByte(0x80, subOpCode);
+                    b = GetVarOrDirectByte(0x40, subOpCode);
                     //setBoxFlags(a, b);
                     this.LogOpCodeInformations("SetBoxFlags()");
                     break;
                 case 2:
-                    a = GetVarOrDirectByte(0x80, currentOpCode);
-                    b = GetVarOrDirectByte(0x40, currentOpCode);
+                    a = GetVarOrDirectByte(0x80, subOpCode);
+                    b = GetVarOrDirectByte(0x40, subOpCode);
                     //setBoxScale(a, b);
                     this.LogOpCodeInformations("SetBoxScale()");
 
                     break;
                 case 3:
-                    a = GetVarOrDirectByte(0x80, currentOpCode);
-                    b = GetVarOrDirectByte(0x40, currentOpCode);
+                    a = GetVarOrDirectByte(0x80, subOpCode);
+                    b = GetVarOrDirectByte(0x40, subOpCode);
                     //setBoxScale(a, (b - 1) | 0x8000);
                     this.LogOpCodeInformations("SetBoxScale(...)");
                     break;
@@ -488,8 +509,9 @@ namespace Scumm.Engine.Resources.Scripts
 		    //    runHook(0);
             //
 	        //camera._movingToActor = 0;
-
+            #if !COMPARE
             this.LogOpCodeInformations("ActorFollowCamera(Actor{0})", actorId);
+            #endif
         }
 
         private void OpActorFromPos() 
@@ -507,7 +529,9 @@ namespace Scumm.Engine.Resources.Scripts
             Actor actor = resourceManager.FindActor(actorID);
             actor.RoomID = GetVarOrDirectByte(0x40, currentOpCode);
 
+            #if !COMPARE
             this.LogOpCodeInformations("Actor{0}.RoomID = {1}", actorID, actor.RoomID);
+            #endif
 	    }
 
         private void OpPutActor() 
@@ -518,8 +542,9 @@ namespace Scumm.Engine.Resources.Scripts
 
             Actor actor = resourceManager.FindActor(actorID);
             actor.PutActor(x, y);
-
+            #if !COMPARE
             this.LogOpCodeInformations("Actor{0}.PutActor({1}, {2})", actorID, x, y);
+            #endif
         }
 
         private void OpAnimateActor()
@@ -539,7 +564,9 @@ namespace Scumm.Engine.Resources.Scripts
                 this.scriptManager.CurrentRoomId = room;
                 StartScene(room);
 
+                #if !COMPARE
                 this.LogOpCodeInformations("LoadRoom({0})", room);
+                #endif
             }
         }
 
@@ -558,8 +585,9 @@ namespace Scumm.Engine.Resources.Scripts
         private void OpJumpRelative()
         {
             Int16 jump = DataReader.ReadInt16();
+            #if !COMPARE
             this.LogOpCodeInformations("goto [{0:X4}]", DataReader.BaseStream.Position + jump);
-
+            #endif
             DataReader.BaseStream.Position += jump;   
         }
 
@@ -570,15 +598,16 @@ namespace Scumm.Engine.Resources.Scripts
 
             Int16 jump = DataReader.ReadInt16();
             
+            #if !COMPARE
             if (a != b)
             {
                 this.LogOpCodeInformations("if({0} != {1})", a, b);
             }
-
             else
             {
                 this.LogOpCodeInformations("if({0} != {1}) : FALSE => goto({2:X4})", a, b, DataReader.BaseStream.Position + jump);
             }
+            #endif
 
             if (a == b) DataReader.BaseStream.Position += jump;   
         }         
@@ -590,16 +619,16 @@ namespace Scumm.Engine.Resources.Scripts
 
             Int16 jump = DataReader.ReadInt16();
 
+            #if !COMPARE
             if (a == b)
             {
                 this.LogOpCodeInformations("if({0} == {1})", a, b);
             }
-
-
             else
             {
                 this.LogOpCodeInformations("if({0} == {1}) : FALSE => goto({2:X4})", a, b, DataReader.BaseStream.Position + jump);
             }
+            #endif
 
             if (a != b) DataReader.BaseStream.Position += jump;
         }
@@ -611,6 +640,7 @@ namespace Scumm.Engine.Resources.Scripts
 
             Int16 jump = DataReader.ReadInt16();
 
+            #if !COMPARE
             if (b < a)
             {
                 this.LogOpCodeInformations("if({0} < {1})", b, a);
@@ -620,6 +650,7 @@ namespace Scumm.Engine.Resources.Scripts
             {
                 this.LogOpCodeInformations("if({0} < {1}) : FALSE => goto({2:X4})", b, a, DataReader.BaseStream.Position + jump);
             }
+            #endif
 
             if (b >= a) DataReader.BaseStream.Position += jump;
         }
@@ -630,7 +661,8 @@ namespace Scumm.Engine.Resources.Scripts
             Int16 b = GetVarOrDirectWord(0x80, currentOpCode);
 
             Int16 jump = DataReader.ReadInt16();
-            
+
+            #if !COMPARE
             if (b > a)
             {
                 this.LogOpCodeInformations("if({0} > {1})", b, a);
@@ -640,6 +672,7 @@ namespace Scumm.Engine.Resources.Scripts
             {
                 this.LogOpCodeInformations("if({0} > {1}) : FALSE => goto({2:X4})", b, a, DataReader.BaseStream.Position + jump);
             }
+            #endif
 
             if (b <= a) DataReader.BaseStream.Position += jump;
         }
@@ -651,6 +684,7 @@ namespace Scumm.Engine.Resources.Scripts
 
             Int16 jump = DataReader.ReadInt16();
 
+            #if !COMPARE
             if (b <= a)
             {
                 this.LogOpCodeInformations("if({0} <= {1})", b, a);
@@ -660,6 +694,7 @@ namespace Scumm.Engine.Resources.Scripts
             {
                 this.LogOpCodeInformations("if({0} <= {1}) : FALSE => goto({2:X4})", b, a, DataReader.BaseStream.Position + jump);
             }
+            #endif
 
             if (b > a) DataReader.BaseStream.Position += jump;
         }
@@ -669,6 +704,7 @@ namespace Scumm.Engine.Resources.Scripts
             Int16 value = Convert.ToInt16(scriptManager.ReadVariable(GetVariableAddress(), this));
             Int16 jump = DataReader.ReadInt16();
 
+            #if !COMPARE
             if (value != 0)
             {
                 this.LogOpCodeInformations("if({0} != 0)", value);
@@ -678,6 +714,7 @@ namespace Scumm.Engine.Resources.Scripts
             {
                 this.LogOpCodeInformations("if({0} != 0) : FALSE => goto({1:X4})", value, DataReader.BaseStream.Position + jump);
             }
+            #endif
 
             if (value == 0) DataReader.BaseStream.Position += jump;
         }
@@ -687,6 +724,7 @@ namespace Scumm.Engine.Resources.Scripts
             Int16 value = Convert.ToInt16(scriptManager.ReadVariable(GetVariableAddress(), this));
             Int16 jump = DataReader.ReadInt16();
 
+            #if !COMPARE
             if (value == 0)
             {
                 this.LogOpCodeInformations("if({0} == 0)", value);
@@ -696,6 +734,7 @@ namespace Scumm.Engine.Resources.Scripts
             {
                 this.LogOpCodeInformations("if({0} == 0) : FALSE => goto({1:X4})", value, DataReader.BaseStream.Position + jump);
             }
+            #endif
 
             if (value != 0) DataReader.BaseStream.Position += jump;
         }
@@ -707,7 +746,10 @@ namespace Scumm.Engine.Resources.Scripts
             Int16 b = Convert.ToInt16(scriptManager.ReadVariable(address, this));
 
             scriptManager.WriteVariable(address, b + a, this);
+
+            #if !COMPARE
             this.LogVariable(address, " = {0} + {1}", a, b);
+            #endif
         }
 
         private void OpIncrement()
@@ -716,7 +758,9 @@ namespace Scumm.Engine.Resources.Scripts
             Int16 variableValue = Convert.ToInt16(scriptManager.ReadVariable(address, this));
 
             scriptManager.WriteVariable(address, variableValue + 1, this);
+            #if !COMPARE
             this.LogVariable(address, "++ (OldValue = {0})", variableValue);
+            #endif
         }
 
         private void OpActorCommand()
@@ -732,40 +776,40 @@ namespace Scumm.Engine.Resources.Scripts
                 {
                     // costume
                     case 1:
-                        Byte costumeId = GetVarOrDirectByte(0x80, currentOpCode);
+                        Byte costumeId = GetVarOrDirectByte(0x80, subOpCode);
                         this.LogOpCodeInformations("Actor_{0}.CostumeID = {1}", actorId, costumeId);
 
                         actor.Costume = resourceManager.Load<Costume>("COST", (int)costumeId, new Dictionary<string, object>() { { "RoomId", scriptManager.CurrentRoomId } });
                         break;
                     case 2: /* walkspeed */
-                        GetVarOrDirectByte(0x80, currentOpCode);
-                        GetVarOrDirectByte(0x40, currentOpCode);
+                        GetVarOrDirectByte(0x80, subOpCode);
+                        GetVarOrDirectByte(0x40, subOpCode);
                         //i = 
                         //j = 
                         //setActorWalkSpeed(a, i, j);
                         break;
                     case 3: /* sound */
-                        GetVarOrDirectByte(0x80, currentOpCode);
+                        GetVarOrDirectByte(0x80, subOpCode);
                         //a->sound = getVarOrDirectByte(0x80);
                         break;
                     case 4: /* walkanim */
-                        GetVarOrDirectByte(0x80, currentOpCode);
+                        GetVarOrDirectByte(0x80, subOpCode);
                         //a->walkFrame = getVarOrDirectByte(0x80);
                         break;
                     case 5: /* talkanim */
-                        GetVarOrDirectByte(0x80, currentOpCode);
-                        GetVarOrDirectByte(0x40, currentOpCode);
+                        GetVarOrDirectByte(0x80, subOpCode);
+                        GetVarOrDirectByte(0x40, subOpCode);
                         //a->talkFrame1 = getVarOrDirectByte(0x80);
                         //a->talkFrame2 = getVarOrDirectByte(0x40);
                         break;
                     case 6: /* standanim */
-                        GetVarOrDirectByte(0x80, currentOpCode);
+                        GetVarOrDirectByte(0x80, subOpCode);
                         //a->standFrame = getVarOrDirectByte(0x80);
                         break;
                     case 7: /* ignore */
-                        GetVarOrDirectByte(0x80, currentOpCode);
-                        GetVarOrDirectByte(0x40, currentOpCode);
-                        GetVarOrDirectByte(0x20, currentOpCode);
+                        GetVarOrDirectByte(0x80, subOpCode);
+                        GetVarOrDirectByte(0x40, subOpCode);
+                        GetVarOrDirectByte(0x20, subOpCode);
                         break;
                     // Init
                     case 8: 
@@ -773,7 +817,7 @@ namespace Scumm.Engine.Resources.Scripts
                         break;
 
                     case 9: /* elevation */
-                        GetVarOrDirectWord(0x80, currentOpCode);
+                        GetVarOrDirectWord(0x80, subOpCode);
                         //a->elevation = 
                         //a->needRedraw = true;
                         //a->needBgReset = true;
@@ -786,30 +830,30 @@ namespace Scumm.Engine.Resources.Scripts
                         //a->talkFrame2 = 4;
                         break;
                     case 11: /* palette */
-                        GetVarOrDirectByte(0x80, currentOpCode);
-                        GetVarOrDirectByte(0x40, currentOpCode);
+                        GetVarOrDirectByte(0x80, subOpCode);
+                        GetVarOrDirectByte(0x40, subOpCode);
                         //checkRange(32, 0, i, "Illegal palet slot %d");
                         //a->palette[i] = j;
                         //a->needRedraw = 1;
                         break;
                     case 12: /* talk color */
                         //a->talkColor = getVarOrDirectByte(0x80);
-                        GetVarOrDirectByte(0x80, currentOpCode);
+                        GetVarOrDirectByte(0x80, subOpCode);
                         break;
                     case 13: /* name */
                         resourceManager.Load<ScummString>("STRN", 0, DataReader);
                         break;
                     case 14: /* initanim */
-                        GetVarOrDirectByte(0x80, currentOpCode);
+                        GetVarOrDirectByte(0x80, subOpCode);
                         //a->initFrame = 
                         break;
                     case 16: /* width */
-                        GetVarOrDirectByte(0x80, currentOpCode);
+                        GetVarOrDirectByte(0x80, subOpCode);
                         //a->width = 
                         break;
                     case 17: /* scale */
-                        GetVarOrDirectByte(0x80, currentOpCode);
-                        GetVarOrDirectByte(0x40, currentOpCode);
+                        GetVarOrDirectByte(0x80, subOpCode);
+                        GetVarOrDirectByte(0x40, subOpCode);
                         //a->scalex = 
                         //a->scaley = 
                         break;
@@ -818,7 +862,7 @@ namespace Scumm.Engine.Resources.Scripts
                         break;
                     case 19: /* setzclip */
                         //a->neverZClip = 
-                        GetVarOrDirectByte(0x80, currentOpCode);
+                        GetVarOrDirectByte(0x80, subOpCode);
                         break;
                     case 20: /* ignoreboxes */
                         //a->ignoreBoxes = 1;
@@ -834,11 +878,11 @@ namespace Scumm.Engine.Resources.Scripts
 
                     case 22: /* animspeed */
                         //a->animSpeed = 
-                        GetVarOrDirectByte(0x80, currentOpCode);
+                        GetVarOrDirectByte(0x80, subOpCode);
                         break;
                     case 23: /* unk2 */
                         //a->data8 = 
-                        GetVarOrDirectByte(0x80, currentOpCode); /* unused */
+                        GetVarOrDirectByte(0x80, subOpCode); /* unused */
                         break;
                     default:
                         throw new NotImplementedException("ActorCommand subCode not found");
@@ -856,8 +900,8 @@ namespace Scumm.Engine.Resources.Scripts
             {
                 // Room scroll
                 case 1:
-                    a = GetVarOrDirectWord(0x80, currentOpCode);
-                    b = GetVarOrDirectWord(0x40, currentOpCode);
+                    a = GetVarOrDirectWord(0x80, subOpCode);
+                    b = GetVarOrDirectWord(0x40, subOpCode);
                     //if (a < 160) a=160;
                     //if (a > ((_scrWidthIn8Unit-20)<<3)) a=((_scrWidthIn8Unit-20)<<3);
                     //if (b < 160) b=160;
@@ -870,22 +914,22 @@ namespace Scumm.Engine.Resources.Scripts
                     throw new InvalidCastException("Room color is no longer a valid command");
                 // Set screen
                 case 3:
-                    a = GetVarOrDirectWord(0x80, currentOpCode);
-                    b = GetVarOrDirectWord(0x40, currentOpCode);
+                    a = GetVarOrDirectWord(0x80, subOpCode);
+                    b = GetVarOrDirectWord(0x40, subOpCode);
                     //initScreens(0,a,320,b);
                     break;
                 // Set palette color
                 case 4:
                 case 228:
-                    a = GetVarOrDirectWord(0x80, currentOpCode);
-                    b = GetVarOrDirectWord(0x40, currentOpCode);
-                    c = GetVarOrDirectWord(0x20, currentOpCode);
+                    a = GetVarOrDirectWord(0x80, subOpCode);
+                    b = GetVarOrDirectWord(0x40, subOpCode);
+                    c = GetVarOrDirectWord(0x20, subOpCode);
                     this.currentOpCode = DataReader.ReadByte();
-                    d = GetVarOrDirectByte(0x80, currentOpCode);
+                    d = GetVarOrDirectByte(0x80, subOpCode);
                     //setPalColor(d, a, b, c); /* index, r, g, b */
                     break;
                 case 10: // ?
-                    a = GetVarOrDirectWord(0x80, currentOpCode);
+                    a = GetVarOrDirectWord(0x80, subOpCode);
                     break;
                 default:
                     throw new NotImplementedException("RoomCommand subCode not found");
@@ -1033,14 +1077,14 @@ namespace Scumm.Engine.Resources.Scripts
                         //vs->curmode = 2;
                         break;
                     case 18: /* set key */
-                        GetVarOrDirectByte(0x80, currentOpCode);
+                        GetVarOrDirectByte(0x80, subOpCode);
                         //vs->key = 
                         break;
                     case 19: /* set center */
                         //vs->center = 1;
                         break;
                     case 20: /* set to string */
-                        GetVarOrDirectWord(0x80, currentOpCode);
+                        GetVarOrDirectWord(0x80, subOpCode);
                         //ptr = getResourceAddress(7, getVarOrDirectWord(0x80));
                         //if (!ptr)
                         //    nukeResource(8, slot);
@@ -1201,7 +1245,9 @@ namespace Scumm.Engine.Resources.Scripts
                     {
                         var id = DataReader.ReadByte();
                         var scummString = resourceManager.Load<ScummString>("STRN", id, DataReader);
+                        #if !COMPARE
                         this.LogOpCodeInformations("LoadString(\"{0}\")", scummString.Stream);
+                        #endif
                         break;
                     }
                 case 2:
@@ -1238,13 +1284,17 @@ namespace Scumm.Engine.Resources.Scripts
                 // load script
                 case 1:
                     resourceManager.Load<Script>("SCRP", resourceId);
+                    #if !COMPARE
                     this.LogOpCodeInformations("LoadScript({0})", resourceId);
+                    #endif
                     break;
 
                 // load room
                 case 4:
                     resourceManager.Load<Room>("ROOM", resourceId);
+                    #if !COMPARE
                     this.LogOpCodeInformations("LoadRoom({0})", resourceId);
+                    #endif
 
                     if (this.scriptManager.CurrentRoomId == 0)
                     {
@@ -1261,7 +1311,9 @@ namespace Scumm.Engine.Resources.Scripts
                 // load charset
                 case 18:
                     resourceManager.Load<Charset>("CHRS", resourceId);
+                    #if !COMPARE
                     this.LogOpCodeInformations("LoadCharSet({0})", resourceId);
+                    #endif
                     break;
             }
             //case 2: /* load sound */
@@ -1333,21 +1385,27 @@ namespace Scumm.Engine.Resources.Scripts
         private void LogOpCodeInformations(string message, params object[] arguments)
         {
             #if DEBUG
-            this.logFile.WriteLine("Script Engine\t[{0:X4}] ({1:X2}) {2}", this.currentInstructionOffset, this.currentOpCode, string.Format(message, arguments));
+                #if COMPARE
+                    this.logFile.WriteLine(string.Format(message, arguments));
+                #else
+                    this.logFile.WriteLine("Script Engine\t[{0:X4}] ({1:X2}) {2}", this.currentInstructionOffset, this.currentOpCode, string.Format(message, arguments));
+                #endif
             #endif
         }
 
         private void LogVariable(uint variableAddress, string message, params object[] arguments)
         {
             #if DEBUG
-            var variableName = "VAR_" + variableAddress;
+                #if !COMPARE
+                    var variableName = "VAR_" + variableAddress;
 
-            if (Enum.IsDefined(typeof(VariableV5), variableAddress))
-            {
-                variableName = ((VariableV5)variableAddress).ToString();
-            }
+                    if (Enum.IsDefined(typeof(VariableV5), variableAddress))
+                    {
+                        variableName = ((VariableV5)variableAddress).ToString();
+                    }
 
-            this.logFile.WriteLine("Script Engine\t[{0:X4}] ({1:X2}) {2}{3}", this.currentInstructionOffset, this.currentOpCode, variableName, string.Format(message, arguments));
+                    this.logFile.WriteLine("Script Engine\t[{0:X4}] ({1:X2}) {2}{3}", this.currentInstructionOffset, this.currentOpCode, variableName, string.Format(message, arguments));
+                #endif
             #endif
         }
         #endregion

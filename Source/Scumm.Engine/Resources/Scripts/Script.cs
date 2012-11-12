@@ -18,6 +18,7 @@ namespace Scumm.Engine.Resources.Scripts
         protected ScriptManager scriptManager;
         protected SceneManager sceneManager;
         protected ResourceManager resourceManager;
+
         protected StreamWriter logFile;
 
         protected Script(string resourceId, byte[] data, ScriptManager scriptMngr, ResourceManager resourceMngr, SceneManager sceneMngr, StreamWriter logFile)
@@ -73,7 +74,10 @@ namespace Scumm.Engine.Resources.Scripts
 
         public void Run(int[] arguments, bool resetScriptCursor)
         {
-            this.logFile.WriteLine("---------- Running Script {0} -----------", this.ResourceId);
+            #if !COMPARE
+                this.logFile.WriteLine("---------- Running Script {0} -----------", this.ResourceId);
+            #endif
+
             this.Status = ScriptStatus.Running;
 
             // Init local variables
@@ -103,7 +107,9 @@ namespace Scumm.Engine.Resources.Scripts
                 this.Status = ScriptStatus.Stopped;
             }
 
-            this.logFile.WriteLine("---------- Script {0} stopped -----------", this.ResourceId);
+            #if !COMPARE
+                this.logFile.WriteLine("---------- Script {0} stopped -----------", this.ResourceId);
+            #endif
         }
 
         public int ReadLocalVariable(uint variableAddress)

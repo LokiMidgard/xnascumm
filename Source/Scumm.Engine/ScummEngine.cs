@@ -26,7 +26,7 @@ namespace Scumm.Engine
         private ResourceManager resourceManager;
         private ScriptManager scriptManager;
         private StreamWriter logFile;
-
+        
         public StreamWriter LogFile
         {
             get { return logFile; }
