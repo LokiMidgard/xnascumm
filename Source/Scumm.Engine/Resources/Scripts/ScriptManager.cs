@@ -79,15 +79,12 @@ namespace Scumm.Engine.Resources.Scripts
             {
                 var script = this.ActiveScripts[i];
 
-                if (script.Status == ScriptStatus.Paused && script.Delay > 0)
+                if (script.Status == ScriptStatus.Paused)
                 {
-                    script.Delay -= gameTime.ElapsedGameTime.TotalSeconds * 60;
-                }
-
-                if (script.Delay <= 0)
-                {
-                    script.Delay = 0;
-                    script.Continue();
+                    if(script.Delay > 0)
+                        script.Delay -= gameTime.ElapsedGameTime.TotalSeconds * 60;
+                    else
+                        script.Continue();
                 }
             }
         }

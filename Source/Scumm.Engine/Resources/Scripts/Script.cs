@@ -18,7 +18,6 @@ namespace Scumm.Engine.Resources.Scripts
         protected ScriptManager scriptManager;
         protected SceneManager sceneManager;
         protected ResourceManager resourceManager;
-
         protected StreamWriter logFile;
 
         protected Script(string resourceId, byte[] data, ScriptManager scriptMngr, ResourceManager resourceMngr, SceneManager sceneMngr, StreamWriter logFile)
@@ -130,7 +129,6 @@ namespace Scumm.Engine.Resources.Scripts
         public void Stop()
         {
             this.Status = ScriptStatus.Stopped;
-            scriptManager.ActiveScripts.Remove(this);
         }
 
         public void WriteLocalVariable(uint variableAddress, int value)

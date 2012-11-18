@@ -12,7 +12,6 @@ namespace Scumm.Engine.Resources
     {
         private SpriteBatch spriteBatch;
         private GraphicsDeviceManager graphics;
-        private EventManager eventManager;
 
         private Room currentRoom;
         private List<Actor> currentActors;
@@ -49,8 +48,6 @@ namespace Scumm.Engine.Resources
             graphics.PreferredBackBufferWidth = 640;
             graphics.PreferredBackBufferHeight = 400;
 
-            eventManager = new EventManager();
-
             currentActors = new List<Actor>();
             inventory = new List<Object>();
             verbs = new List<Verb>();
@@ -63,7 +60,6 @@ namespace Scumm.Engine.Resources
 
         public override void Update(GameTime gameTime)
         {
-            eventManager.Update();
         }
 
         public override void Draw(GameTime gameTime)

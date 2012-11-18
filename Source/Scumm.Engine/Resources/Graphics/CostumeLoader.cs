@@ -193,12 +193,11 @@ namespace Scumm.Engine.Resources.Graphics
 
                 costumeAnimation.Frames.Add(costumeFrame);
 
-                if (!Directory.Exists("DebugAnims"))
-                {
-                    Directory.CreateDirectory("DebugAnims");
-                }
-
-                costumeFrame.Data.SaveAsPng(File.Create(string.Format("DebugAnims\\Anim{0}_{1}.png", animationIndex, currentFrameIndex)), costumeFrame.Data.Width, costumeFrame.Data.Height);
+                //if (!Directory.Exists("DebugAnims"))
+                //{
+                //    Directory.CreateDirectory("DebugAnims");
+                //}
+                //costumeFrame.Data.SaveAsPng(File.Create(string.Format("DebugAnims\\Anim{0}_{1}.png", animationIndex, currentFrameIndex)), costumeFrame.Data.Width, costumeFrame.Data.Height);
 
                 reader.BaseStream.Position = startAnimationPosition;
                 currentFrameIndex++;

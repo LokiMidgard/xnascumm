@@ -23,6 +23,7 @@ namespace Scumm.Engine
 
         private static ScummEngine instance;      
         private SceneManager sceneManager;
+        private EventManager eventManager;
         private ResourceManager resourceManager;
         private ScriptManager scriptManager;
         private StreamWriter logFile;
@@ -102,6 +103,7 @@ namespace Scumm.Engine
         protected override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
+            scriptManager.RunActiveScripts(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)

@@ -17,6 +17,23 @@ namespace Scumm.Engine.IO
             this.buffer = new byte[16];
         }
 
+        public char[] ReadCharString()
+        {
+            char[] str = new char[256];
+
+            int i = 0;
+            char next = ReadChar();
+
+            while (next != 0)
+            {
+                str[i] = next;
+                ++i;
+                next = ReadChar();
+            }
+
+            return str;
+        }
+
         public Byte[] ReadByteString()
         {
             Byte[] str = new Byte[16];

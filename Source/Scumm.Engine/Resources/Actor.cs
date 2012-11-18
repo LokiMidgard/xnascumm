@@ -24,7 +24,8 @@ namespace Scumm.Engine.Resources
 
         byte roomId;
         int scale;
-  
+
+        string talk;
         int talkColor;
         Vector2 talkPosition;
         int width;
@@ -70,6 +71,7 @@ namespace Scumm.Engine.Resources
             this.elevation = 0;
             this.width = 24;
             this.talkColor = 15;
+            this.talkPosition = new Vector2(50, 50);
 
             this.initFrame = 1;
             this.walkFrame = 2;
@@ -85,13 +87,26 @@ namespace Scumm.Engine.Resources
             this.position = new Vector2(x, y);
         }
 
-        public void Talk()
+        public void Talk(string text)
         {
+            talk = text;
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
             costume.Draw(spriteBatch, position);
+            if (talk != null)
+            {
+                char[] buffer = new char[talk.Length];
+                for (int i = 0; i < talk.Length; ++i)
+                {
+                    if ((talk[i] < 'a' || talk[i] > 'z') && (talk[i] < 'A' || talk[i] > 'Z'))
+                        buffer[i] = ' ';
+                    else
+                        buffer[i] = talk[i];
+                }
+                spriteBatch.DrawString(ScummEngine.font, new string(buffer), talkPosition * 2, Color.White);
+            }
         }
     }
 }
