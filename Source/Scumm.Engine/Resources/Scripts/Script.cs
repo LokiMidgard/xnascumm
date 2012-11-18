@@ -78,6 +78,7 @@ namespace Scumm.Engine.Resources.Scripts
                 this.logFile.WriteLine("---------- Running Script {0} -----------", this.ResourceId);
             #endif
 
+            scriptManager.ActiveScripts.Add(this);
             this.Status = ScriptStatus.Running;
 
             // Init local variables

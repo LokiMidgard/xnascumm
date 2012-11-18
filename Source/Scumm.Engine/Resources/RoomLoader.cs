@@ -55,8 +55,24 @@ namespace Scumm.Engine.Resources.Loaders
             room.ExitScript = ResourceManager.Load<Script>("SCRP", new Dictionary<string, object>() { { "Type", "EXCD" } });
             room.EntryScript = ResourceManager.Load<Script>("SCRP", new Dictionary<string, object>() { { "Type", "ENCD" } });
 
+            // Read local script
+            if (reader.FindDataBlock("NLSC") != 0)
+            {
+                byte totalLocal = reader.ReadByte();
+                byte padding = reader.ReadByte();
+                if (totalLocal != 0)
+                {
+                    room.Scripts = new Script[totalLocal];
+                    for (int i = 0; i < totalLocal; ++i)
+                    {
+                        room.Scripts[i] = resourceManager.Load<Script>("SCRP", new Dictionary<string, object>() { { "Type", "LSCR" } });
+                    }
+                }
+            }
+
             // Read background image
             room.BackgroundImage = ResourceManager.Load<Image>("RMIM", new Dictionary<string, object>() { { "Width", (int)width }, { "Height", (int)height }, { "RoomOffset", roomOffset }, { "RoomPalette", room.Palette } });
+
 
             return room;
         }

@@ -15,6 +15,7 @@ namespace Scumm.Engine.Resources
 
         Object[] objects;
         Script entryScript, exitScript;
+        Script[] scripts;
 
         public Room(string resourceId)
             : base(resourceId)
@@ -31,6 +32,11 @@ namespace Scumm.Engine.Resources
         {
             get { return entryScript; }
             set { entryScript = value; }
+        }
+        public Script[] Scripts
+        {
+            get { return scripts; }
+            set { scripts = value; }
         }
 
         public Image BackgroundImage

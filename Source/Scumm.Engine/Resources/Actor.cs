@@ -29,6 +29,9 @@ namespace Scumm.Engine.Resources
         Vector2 talkPosition;
         int width;
 
+        Byte ownerState;
+        UInt32 classData;
+
         #region Properties
 
         public byte RoomID
@@ -45,6 +48,12 @@ namespace Scumm.Engine.Resources
         {
             get { return position; }
             set { position = value; }
+        }
+
+        public UInt32 ClassData
+        {
+            get { return classData; }
+            set { classData = value; }
         }
 
         #endregion

@@ -19,7 +19,7 @@ namespace Scumm.Engine.Resources
         public Object()
             : base("")
         {
-            verbs = new ScriptV5[100];
+            verbs = new ScriptV5[300];
         }
 
         public UInt16 Id

@@ -56,14 +56,11 @@ namespace Scumm.Engine.Resources
                 // load verb scripts
                 for (int i = 0; i < totalVerbs; ++i)
                 {
-                    if (verbs[i] == 91)
-                    {
-                        long startPos = verbPos + offsets[i];
-                        uint size = (uint)(endPos - startPos);
+                    long startPos = verbPos + offsets[i];
+                    uint size = (uint)(endPos - startPos);
 
-                        obj.VerbScript[verbs[i]] = (ScriptV5)resourceManager.Load<Script>("SCRP", id, reader, new Dictionary<string, object>() { { "Position", startPos },
-                                                                                                                                                 { "Blocksize", size } });
-                    }
+                    obj.VerbScript[verbs[i]] = 
+                        (ScriptV5)resourceManager.Load<Script>("SCRP", id, reader, new Dictionary<string, object>() { { "Position", startPos }, { "Blocksize", size } });
                 }
                 reader.BaseStream.Position = backupPos;
             }

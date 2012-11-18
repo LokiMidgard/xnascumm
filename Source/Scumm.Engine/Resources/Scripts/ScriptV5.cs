@@ -18,10 +18,13 @@ namespace Scumm.Engine.Resources.Scripts
         {
             opCodeHandlers = new Action[256];
 
+            opCodeHandlers[0x00] = new Action(OpStopObjectCode);
+            opCodeHandlers[0x01] = new Action(OpPutActor);
             opCodeHandlers[0x08] = new Action(OpIsNotEqual);
             opCodeHandlers[0x0A] = new Action(OpRunScript);
             opCodeHandlers[0x0C] = new Action(OpResourceCommand);
             opCodeHandlers[0x10] = new Action(OpGetObjectOwner);
+            opCodeHandlers[0x11] = new Action(OpAnimateActor);
             opCodeHandlers[0x13] = new Action(OpActorCommand);
             opCodeHandlers[0x14] = new Action(OpPrint);
             opCodeHandlers[0x18] = new Action(OpJumpRelative);
@@ -34,7 +37,7 @@ namespace Scumm.Engine.Resources.Scripts
             opCodeHandlers[0x29] = new Action(OpSetOwnerOf);
             opCodeHandlers[0x2A] = new Action(OpRunScript);
             opCodeHandlers[0x2C] = new Action(OpCursorCommand);
-            opCodeHandlers[0xED] = new Action(OpPutActorInRoom);
+            opCodeHandlers[0x2D] = new Action(OpPutActorInRoom);
             opCodeHandlers[0x30] = new Action(OpMatrixCommand);
             opCodeHandlers[0x33] = new Action(OpRoomCommand);
             opCodeHandlers[0x37] = new Action(OpStartObject);
@@ -43,6 +46,7 @@ namespace Scumm.Engine.Resources.Scripts
             opCodeHandlers[0x46] = new Action(OpIncrement);
             opCodeHandlers[0x48] = new Action(OpIsEqual);
             opCodeHandlers[0x5A] = new Action(OpAdd);
+            opCodeHandlers[0x5D] = new Action(OpActorSetClass);
             opCodeHandlers[0x68] = new Action(OpGetScriptRunning);
             opCodeHandlers[0x72] = new Action(OpLoadRoom);
             opCodeHandlers[0x78] = new Action(OpIsGreater);
@@ -95,7 +99,7 @@ namespace Scumm.Engine.Resources.Scripts
 
             else if (currentOpCode != 0xFF)
             {
-                Console.WriteLine("Unknown opcode {0:X2}", currentOpCode);
+                Console.WriteLine("Unknown opcode {0}", currentOpCode);
                 this.LogOpCodeInformations("Unknown opcode {0}", currentOpCode);
             }
         }
@@ -426,12 +430,18 @@ namespace Scumm.Engine.Resources.Scripts
             if ((currentOpCode & 0x20) != 0) a = 1;
             if ((currentOpCode & 0x40) != 0) b = 1;
 
-            if (scriptId < 200)
+            if (scriptId < 199)
             {
-                #if !COMPARE
+#if !COMPARE
                 this.LogOpCodeInformations("RunScript({0})", scriptId);
-                #endif
+#endif
                 Script script = resourceManager.Load<Script>("SCRP", scriptId);
+                script.Run();
+            }
+            else
+            {
+                Room room = resourceManager.Load<Room>("ROOM", scriptManager.CurrentRoomId);
+                Script script = room.Scripts[scriptId - 200];
                 script.Run();
             }
         }
@@ -463,6 +473,7 @@ namespace Scumm.Engine.Resources.Scripts
 
         private void OpStopObjectCode()
         {
+            Stop();
         }
 
         private void OpPseudoRoom()
@@ -548,6 +559,27 @@ namespace Scumm.Engine.Resources.Scripts
             Int16 objX = GetVarOrDirectWord(0x80, currentOpCode);
             Int16 objY = GetVarOrDirectWord(0x40, currentOpCode);
             //setResult(getActorFromPos(x,y));
+        }
+
+        private void OpActorSetClass()
+        {
+            var actorID = GetVarOrDirectWord(0x80, currentOpCode);
+            Actor actor = resourceManager.FindActor(actorID);
+
+            var subOpCode = DataReader.ReadByte();
+            while (subOpCode != 0xFF)
+            {
+                int i = GetVarOrDirectWord(0x80, subOpCode);
+                if (i == 0)
+                {
+                    actor.ClassData = 0;
+                    continue;
+                }
+                //if ((i & 0x80) > 0)
+                //    actor.ClassData = 1;
+                //else
+                //    actor.ClassData = 0;
+            }
         }
 
         private void OpPutActorInRoom() 
@@ -894,7 +926,7 @@ namespace Scumm.Engine.Resources.Scripts
                         //a->neverZClip = 0;
                         //FixRoom:
                         //if (a->room == _currentRoom)
-                        //  putActor(a, a->x, a->y, a->room);
+                        //  opPutActor(a, a->x, a->y, a->room);
                         break;
                     case 21: /* followboxes */
                     //a->ignoreBoxes = 0;

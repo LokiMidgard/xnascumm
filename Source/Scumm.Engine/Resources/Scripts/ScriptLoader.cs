@@ -34,11 +34,18 @@ namespace Scumm.Engine.Resources.Scripts
                 if (parameters.ContainsKey("Type"))
                 {
                     blockSize = reader.FindDataBlock((string)parameters["Type"]);
+                    if ((string)parameters["Type"] == "LSCR")
+                    {
+                        byte id = reader.ReadByte();
+                        resourceId = String.Format("SCRP_{0}", id);
+                        --blockSize;
+                    }
                 }
                 else
                 {
                     reader.BaseStream.Position = (long)parameters["Position"];
                     blockSize = (uint)parameters["Blocksize"];
+                    blockSize += 8;
                 }
             }
                 
