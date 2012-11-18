@@ -47,8 +47,8 @@ namespace Scumm.Engine.Resources
             for (int i = 0; i < 13; ++i)
                 actors[i] = new Actor();
 
-            verbs = new Verb[100];
-            for (int i = 0; i < 100; ++i)
+            verbs = new Verb[300];
+            for (int i = 0; i < 300; ++i)
                 verbs[i] = new Verb("");
         }
 
@@ -311,7 +311,8 @@ namespace Scumm.Engine.Resources
                 var loader = this.loaders[resourceType];
 
                 // Load the resource
-                var resource = loader.LoadResourceData(reader, resourceType, parameters);
+                string resourceIdName = string.Format("{0}_{1}", resourceType, resourceId);
+                var resource = loader.LoadResourceData(reader, resourceIdName, parameters);
 
                 // Return the resource
                 return (T)resource;

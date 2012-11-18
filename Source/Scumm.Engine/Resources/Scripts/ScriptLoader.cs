@@ -25,13 +25,23 @@ namespace Scumm.Engine.Resources.Scripts
         {
             uint blockSize;
 
-            if (parameters.ContainsKey("Type"))
+            if (!parameters.ContainsKey("Type") && !parameters.ContainsKey("Position"))
             {
-                blockSize = reader.FindDataBlock((string)parameters["Type"]);
+                blockSize = reader.FindDataBlock("SCRP");
             }
             else
-                blockSize = reader.FindDataBlock("SCRP");
-
+            {
+                if (parameters.ContainsKey("Type"))
+                {
+                    blockSize = reader.FindDataBlock((string)parameters["Type"]);
+                }
+                else
+                {
+                    reader.BaseStream.Position = (long)parameters["Position"];
+                    blockSize = (uint)parameters["Blocksize"];
+                }
+            }
+                
             // Read script Header information
             if (blockSize == 0)
             {

@@ -72,6 +72,9 @@ namespace Scumm.Engine.Resources.Graphics
             }
 
             // Load the room palette associated with the costume
+            // (huge hack - I have no idea what to do when room is 0)
+            if ((byte)parameters["RoomId"] == 0)
+                parameters["RoomId"] = (byte)10;
             var roomPalette = this.resourceManager.Load<Room>("ROOM", (byte)parameters["RoomId"]).Palette;
 
             for (int i = 4; i < animationsCount; i++)

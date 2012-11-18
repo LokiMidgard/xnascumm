@@ -145,6 +145,30 @@ namespace Scumm.Engine.IO
             return 0;
         }
 
+        public uint FindDataBlockNoInfo(string blockType)
+        {
+            System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
+
+            byte[] byteArray = new byte[4];
+            byteArray = ReadBytes(4);
+
+            var currentBlockType = enc.GetString(byteArray);
+            var itemSize = ReadUInt32BigEndian();
+
+            while (BaseStream.Position <= BaseStream.Length)
+            {
+                if (currentBlockType == blockType)
+                {
+                    itemSize = ReadUInt32BigEndian();
+                    return itemSize;
+                }
+
+                byteArray = ReadBytes(4);
+                currentBlockType = enc.GetString(byteArray);
+            }
+            return 0;
+        }
+
         #region Private Methods
 
         private bool IsContainerBlock(string blockType)

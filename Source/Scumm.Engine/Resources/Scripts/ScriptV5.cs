@@ -8,6 +8,8 @@ namespace Scumm.Engine.Resources.Scripts
 {
     public class ScriptV5 : Script
     {
+        static int instructionCount = 0;
+
         private Action[] opCodeHandlers;
         private uint currentInstructionOffset;
 
@@ -78,8 +80,7 @@ namespace Scumm.Engine.Resources.Scripts
             {
                 try
                 {
-                    if(currentOpCode != 39 && currentOpCode != 26 && ResourceId != null)
-                        this.LogOpCodeInformations("{0} : {1}", ResourceId, currentOpCode);
+                    this.LogOpCodeInformations("{0}. {1} : {2}", ++instructionCount, ResourceId, currentOpCode);
                     opCodeHandlers[currentOpCode]();
                 }
 
@@ -95,17 +96,12 @@ namespace Scumm.Engine.Resources.Scripts
             else if (currentOpCode != 0xFF)
             {
                 Console.WriteLine("Unknown opcode {0:X2}", currentOpCode);
-                #if !COMPARE
-                this.LogOpCodeInformations("Unknown opcode");
-                #endif
+                this.LogOpCodeInformations("Unknown opcode {0}", currentOpCode);
             }
         }
 
         private void StartScene(byte roomId)
         {
-            if (roomId == 0)
-                return;
-
             scriptManager.WriteVariable((uint)VariableV5.VAR_NEW_ROOM, roomId, this);
             RunExitScript(scriptManager.CurrentRoomId);
 
@@ -113,6 +109,10 @@ namespace Scumm.Engine.Resources.Scripts
             scriptManager.WriteVariable((uint)VariableV5.VAR_ROOM_RESOURCE, roomId, this);
 
             scriptManager.CurrentRoomId = roomId;
+
+            // provisory?!
+            if (roomId == 0)
+                return;
 
             // update scene manager
             sceneManager.CurrentRoom = resourceManager.Load<Room>("ROOM", roomId);
@@ -172,6 +172,16 @@ namespace Scumm.Engine.Resources.Scripts
                 Script entry = resourceManager.Load<Script>("SCRP", scriptId);
                 entry.Run();
             }
+        }
+
+        private void RunVerbCode(int objId, byte entry, int a, int b, int[] data)
+        {
+            if(objId == 0)
+                return;
+
+            Object obj = resourceManager.FindObject(objId);
+            Script script = obj.VerbScript[entry];
+            script.Run(data);
         }
 
         private void RunHook(byte hookId)
@@ -313,7 +323,14 @@ namespace Scumm.Engine.Resources.Scripts
         {
             var obj = GetVarOrDirectWord(0x80, currentOpCode);
             var script = GetVarOrDirectByte(0x40, currentOpCode);
+
             short[] data = GetWordVararg();
+            int[] dataInt = new int[data.Count<short>()];
+
+            for (int i = 0; i < data.Count<short>(); ++i)
+                dataInt[i] = (int)data[i];
+
+            RunVerbCode(obj, script, 0, 0, dataInt);
         }
 
         private void OpSetOwnerOf()
@@ -423,13 +440,24 @@ namespace Scumm.Engine.Resources.Scripts
         {
             uint address = GetVariableAddress();
             Byte script = GetVarOrDirectByte(0x80, currentOpCode);
+            String scriptCode = String.Format("SCRP_{0}", script);
 
-            scriptManager.WriteVariable(address, 1, this);
+            for (int i = 0; i < scriptManager.ActiveScripts.Count; ++i)
+            {
+                if (scriptCode == scriptManager.ActiveScripts[i].ResourceId)
+                {
+                    scriptManager.WriteVariable(address, 1, this);
+                    return;
+                }
+            }
+            scriptManager.WriteVariable(address, 0, this);
         }
 
         private void OpBreakHere()
         {
+            #if !COMPARE
             this.LogOpCodeInformations("StopScript()");
+            #endif
             Stop();
         }
 
@@ -557,17 +585,13 @@ namespace Scumm.Engine.Resources.Scripts
         {
             byte room = GetVarOrDirectByte(0x80, currentOpCode);
 
+            this.LogOpCodeInformations("Loading room {0}", room);
+
             if (room != 0)
-            {
                 resourceManager.Load<Room>("ROOM", room);
 
-                this.scriptManager.CurrentRoomId = room;
-                StartScene(room);
-
-                #if !COMPARE
-                this.LogOpCodeInformations("LoadRoom({0})", room);
-                #endif
-            }
+            this.scriptManager.CurrentRoomId = room;
+            StartScene(room);
         }
 
         private void OpSetVariableRange()
@@ -776,9 +800,10 @@ namespace Scumm.Engine.Resources.Scripts
                 {
                     // costume
                     case 1:
-                        Byte costumeId = GetVarOrDirectByte(0x80, subOpCode);
+                        int costumeId = GetVarOrDirectByte(0x80, subOpCode);
+                        #if !COMPARE
                         this.LogOpCodeInformations("Actor_{0}.CostumeID = {1}", actorId, costumeId);
-
+                        #endif
                         actor.Costume = resourceManager.Load<Costume>("COST", (int)costumeId, new Dictionary<string, object>() { { "RoomId", scriptManager.CurrentRoomId } });
                         break;
                     case 2: /* walkspeed */
@@ -924,7 +949,7 @@ namespace Scumm.Engine.Resources.Scripts
                     a = GetVarOrDirectWord(0x80, subOpCode);
                     b = GetVarOrDirectWord(0x40, subOpCode);
                     c = GetVarOrDirectWord(0x20, subOpCode);
-                    this.currentOpCode = DataReader.ReadByte();
+                    subOpCode = DataReader.ReadByte();
                     d = GetVarOrDirectByte(0x80, subOpCode);
                     //setPalColor(d, a, b, c); /* index, r, g, b */
                     break;
@@ -1211,7 +1236,10 @@ namespace Scumm.Engine.Resources.Scripts
                     // Other operation
                     case 6:
                         {
-                            ExecuteInstruction();
+                            //ExecuteInstruction();
+                            currentOpCode = DataReader.ReadByte();
+                            opCodeHandlers[currentOpCode]();
+
                             var value = scriptManager.ReadVariable(0, this);
                             scriptManager.Push(Convert.ToInt32(value));
                             logOperation = string.Format("{0}", value);
@@ -1295,13 +1323,6 @@ namespace Scumm.Engine.Resources.Scripts
                     #if !COMPARE
                     this.LogOpCodeInformations("LoadRoom({0})", resourceId);
                     #endif
-
-                    if (this.scriptManager.CurrentRoomId == 0)
-                    {
-                        this.scriptManager.CurrentRoomId = resourceId;
-                        StartScene(resourceId);
-                    }
-
                     break;
 
                 // lock script

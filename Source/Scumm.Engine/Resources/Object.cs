@@ -11,13 +11,15 @@ namespace Scumm.Engine.Resources
         Byte ownerState;
         UInt32 classData;
         UInt16 id;
+        string name;
 
-        Script[] verbs;
+        ScriptV5[] verbs;
         Image image;
 
         public Object()
             : base("")
         {
+            verbs = new ScriptV5[100];
         }
 
         public UInt16 Id
@@ -34,6 +36,18 @@ namespace Scumm.Engine.Resources
         {
             get { return classData; }
             set { classData = value; }
+        }
+
+        public string Name
+        {
+            get { return name; }
+            set { name = value; }
+        }
+
+        public ScriptV5[] VerbScript
+        {
+            get { return verbs; }
+            set { verbs = value; }
         }
 
         public void setOwnerState(UInt16 value)
