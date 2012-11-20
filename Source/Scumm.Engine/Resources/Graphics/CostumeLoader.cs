@@ -29,60 +29,60 @@ namespace Scumm.Engine.Resources.Graphics
             {
                 throw new InvalidOperationException("Could not find the costume header block.");
             }
-
+            
             reader.BaseStream.Position -= 6;
             var startOffset = reader.BaseStream.Position;
-
+            
             var size = reader.ReadUInt32();
             var test = ((char)reader.ReadByte()).ToString() + ((char)reader.ReadByte()).ToString();
-
+            
             var animationsCount = reader.ReadByte();
-
+            
             var format = reader.ReadByte();
             var paletteSize = ((format & 0x7F) == 0x58 || (format & 0x7F) == 0x60) ? 16 : 32;
             var containsRedirection = ((format & 0x7E) == 0x60);
             var mirrorWestPositions = (format & 0x80) == 0;
-
+            
             // TODO: Decode bit 7
-
+            
             // TODO : Read the full palette
             var palette = new byte[paletteSize];
-
+            
             for (int i = 0; i < paletteSize; i++)
             {
                 palette[i] = reader.ReadByte();
             }
-
+            
             var animationCommandOffset = reader.ReadUInt16();
-
+            
             // Read limb offsets
             var limbOffsets = new ushort[16];
-
+            
             for (int i = 0; i < 16; i++)
             {
                 limbOffsets[i] = reader.ReadUInt16();
             }
-
+            
             // Read animation offsets
             var animationOffsets = new ushort[animationsCount];
-
+            
             for (int i = 0; i < animationOffsets.Length; i++)
             {
                 animationOffsets[i] = reader.ReadUInt16();
             }
-
+            
             // Load the room palette associated with the costume
             // (huge hack - I have no idea what to do when room is 0)
             if ((byte)parameters["RoomId"] == 0)
                 parameters["RoomId"] = (byte)10;
             var roomPalette = this.resourceManager.Load<Room>("ROOM", (byte)parameters["RoomId"]).Palette;
-
+            
             for (int i = 4; i < animationsCount; i++)
             {
                 var animation = LoadAnimation(reader, i, startOffset, animationOffsets, limbOffsets, animationCommandOffset, palette, roomPalette, containsRedirection, (i % 4) == 0 && mirrorWestPositions);
                 costume.Animations.Add(animation);
             }
-
+            
             return costume;
         }
 

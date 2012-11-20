@@ -272,7 +272,7 @@ namespace Scumm.Engine.Resources.Scripts
                     case 7: /* overhead */
                         //_stringOverhead[textSlot] = 1;
                         break;
-                    case 8: /* ignore */
+                    case 8: // ignore
                         GetVarOrDirectWord(0x80, currentOpCode);
                         GetVarOrDirectWord(0x40, currentOpCode);
                         break;
@@ -740,6 +740,9 @@ namespace Scumm.Engine.Resources.Scripts
 
             Actor actor = resourceManager.FindActor(actorID);
             actor.PutActor(x, y);
+            if (actor.RoomID == scriptManager.CurrentRoomId)
+                sceneManager.CurrentActors.Add(actor);
+
             #if !COMPARE
             this.LogOpCodeInformations("Actor{0}.PutActor({1}, {2})", actorID, x, y);
             #endif
@@ -1035,8 +1038,9 @@ namespace Scumm.Engine.Resources.Scripts
                         //a->talkColor = getVarOrDirectByte(0x80);
                         GetVarOrDirectByte(0x80, subOpCode);
                         break;
-                    case 13: /* name */
-                        resourceManager.Load<ScummString>("STRN", 0, DataReader);
+                    // name
+                    case 13:
+                        actor.Name = resourceManager.Load<ScummString>("STRN", 0, DataReader);
                         break;
                     case 14: /* initanim */
                         GetVarOrDirectByte(0x80, subOpCode);

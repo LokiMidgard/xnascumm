@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Scumm.Engine.Resources
 {
-    class ScummString : Resource
+    public class ScummString : Resource
     {
         string stream;
 

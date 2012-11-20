@@ -29,10 +29,7 @@ namespace Scumm.Engine.Resources.Graphics
                 var currentAnimation = this.Animations[0];
                 var isMirrored = currentAnimation.IsMirrored;
 
-                // TO REMOVE: Hardcode the position for now because the script engine is not yet complete for actor positionning
-                position = new Vector2(280, 180);
-
-                spriteBatch.Draw(currentAnimation.Frames[0].Data, new Rectangle((int)position.X, (int)position.Y, currentAnimation.Frames[0].Data.Width * 2, currentAnimation.Frames[0].Data.Height * 2), null, Color.White, 0, Vector2.Zero, isMirrored ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 0);
+                spriteBatch.Draw(currentAnimation.Frames[0].Data, new Rectangle((int)position.X * 2, (int)position.Y, currentAnimation.Frames[0].Data.Width * 2, currentAnimation.Frames[0].Data.Height * 2), null, Color.White, 0, Vector2.Zero, isMirrored ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 0);
             }
         }
     }

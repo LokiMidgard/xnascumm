@@ -18,8 +18,7 @@ namespace Scumm.Engine.Resources
         int talkStartFrame, talkStopFrame;
         int walkFrame;
 
-        public int layer;
-        string name;
+        int layer;
         Vector2 position;
 
         byte roomId;
@@ -30,8 +29,7 @@ namespace Scumm.Engine.Resources
         Vector2 talkPosition;
         int width;
 
-        Byte ownerState;
-        UInt32 classData;
+        ScummString name;
 
         #region Properties
 
@@ -50,11 +48,10 @@ namespace Scumm.Engine.Resources
             get { return position; }
             set { position = value; }
         }
-
-        public UInt32 ClassData
+        public ScummString Name
         {
-            get { return classData; }
-            set { classData = value; }
+            get { return name; }
+            set { name = value; }
         }
 
         #endregion
@@ -83,7 +80,6 @@ namespace Scumm.Engine.Resources
         public void PutActor(int x, int y)
         {
             // TODO : Complete this method to adjust the position based on various parameters (see ScummVM source code)
-
             this.position = new Vector2(x, y);
         }
 
@@ -95,18 +91,18 @@ namespace Scumm.Engine.Resources
         public void Draw(SpriteBatch spriteBatch)
         {
             costume.Draw(spriteBatch, position);
-            if (talk != null)
-            {
-                char[] buffer = new char[talk.Length];
-                for (int i = 0; i < talk.Length; ++i)
-                {
-                    if ((talk[i] < 'a' || talk[i] > 'z') && (talk[i] < 'A' || talk[i] > 'Z'))
-                        buffer[i] = ' ';
-                    else
-                        buffer[i] = talk[i];
-                }
-                spriteBatch.DrawString(ScummEngine.font, new string(buffer), talkPosition * 2, Color.White);
-            }
+            //if (talk != null)
+            //{
+            //    char[] buffer = new char[talk.Length];
+            //    for (int i = 0; i < talk.Length; ++i)
+            //    {
+            //        if ((talk[i] < 'a' || talk[i] > 'z') && (talk[i] < 'A' || talk[i] > 'Z'))
+            //            buffer[i] = ' ';
+            //        else
+            //            buffer[i] = talk[i];
+            //    }
+            //    spriteBatch.DrawString(ScummEngine.font, new string(buffer), talkPosition * 2, Color.White);
+            //}
         }
     }
 }

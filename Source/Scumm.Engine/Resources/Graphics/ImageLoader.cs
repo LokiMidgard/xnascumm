@@ -5,12 +5,14 @@ using System.Text;
 using Scumm.Engine.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.IO;
 
 namespace Scumm.Engine.Resources.Loaders
 {
 	public class ImageLoader : ResourceLoader
 	{
         GraphicsDevice graphicsDevice;
+        static int imageNum = 0;
 
         public ImageLoader(GraphicsDevice device)
         {
@@ -71,7 +73,7 @@ namespace Scumm.Engine.Resources.Loaders
 				reader.BaseStream.Position = smapStartOffset + stripeOffsets[i];
 	
 				var stripeHeader = reader.ReadByte();
-				var codingShift = (byte)(stripeHeader % 10);
+                var codingShift = (byte)(stripeHeader % 10);
 				var encoderType = stripeHeader / 10;
 
 				byte[] decodedData = null;
@@ -80,12 +82,10 @@ namespace Scumm.Engine.Resources.Loaders
 				{
 					decodedData = DecodeUnkAStripe(reader, codingShift, image.Height, roomPalette);
 				}
-
 				else if (encoderType == (int)EncoderType.UnkBOpaque)
 				{
 					decodedData = DecodeUnkBStripe(reader, codingShift, image.Height, roomPalette);
 				}
-
 				else if (encoderType == (int)EncoderType.UnkCOpaque)
 				{
 					decodedData = DecodeUnkCStripe(reader, codingShift, image.Height, roomPalette);
@@ -101,7 +101,7 @@ namespace Scumm.Engine.Resources.Loaders
 						{
 							var pixelIndex = i * 32 + j * image.Width * 4 + k * 4;
 
-							textureData[pixelIndex] = decodedData[decodedDataIndex];
+							textureData[pixelIndex]     = decodedData[decodedDataIndex];
 							textureData[pixelIndex + 1] = decodedData[decodedDataIndex + 1];
 							textureData[pixelIndex + 2] = decodedData[decodedDataIndex + 2];
 							textureData[pixelIndex + 3] = decodedData[decodedDataIndex + 3];
@@ -114,6 +114,9 @@ namespace Scumm.Engine.Resources.Loaders
 
             image.Texture = new Microsoft.Xna.Framework.Graphics.Texture2D(graphicsDevice, image.Width, image.Height, false, Microsoft.Xna.Framework.Graphics.SurfaceFormat.Color);
 			image.Texture.SetData(textureData);
+
+            image.Texture.SaveAsPng(File.Create(string.Format("DebugAnims\\Test_{0}.png", imageNum)), image.Width, image.Height);
+            ++imageNum;
 		}
 
 		private byte[] DecodeUnkAStripe(ScummBinaryReader reader, byte codingShift, int stripHeight, Color[] roomPalette)
@@ -189,7 +192,7 @@ namespace Scumm.Engine.Resources.Loaders
 		{
 			var data = new byte[32 * stripHeight];
 
-			var color = (int)reader.ReadBits(codingShift);
+            var color = (int)reader.ReadByte();// its(codingShift);
 			var stripePixelsLeft = 8 * stripHeight;
 
 			var pixelIndex = 0;
