@@ -12,7 +12,6 @@ namespace Scumm.Engine.Resources.Loaders
 	public class ImageLoader : ResourceLoader
 	{
         GraphicsDevice graphicsDevice;
-        static int imageNum = 0;
 
         public ImageLoader(GraphicsDevice device)
         {
@@ -114,16 +113,13 @@ namespace Scumm.Engine.Resources.Loaders
 
             image.Texture = new Microsoft.Xna.Framework.Graphics.Texture2D(graphicsDevice, image.Width, image.Height, false, Microsoft.Xna.Framework.Graphics.SurfaceFormat.Color);
 			image.Texture.SetData(textureData);
-
-            image.Texture.SaveAsPng(File.Create(string.Format("DebugAnims\\Test_{0}.png", imageNum)), image.Width, image.Height);
-            ++imageNum;
 		}
 
 		private byte[] DecodeUnkAStripe(ScummBinaryReader reader, byte codingShift, int stripHeight, Color[] roomPalette)
 		{
 			var data = new byte[32 * stripHeight];
 
-			var color = reader.ReadBits(codingShift);
+			var color = reader.ReadByte();
 			var stripePixelsLeft = 8 * stripHeight;
 
 			data[0] = roomPalette[color].R;
@@ -192,7 +188,7 @@ namespace Scumm.Engine.Resources.Loaders
 		{
 			var data = new byte[32 * stripHeight];
 
-            var color = (int)reader.ReadByte();// its(codingShift);
+            var color = (int)reader.ReadByte();
 			var stripePixelsLeft = 8 * stripHeight;
 
 			var pixelIndex = 0;
@@ -242,7 +238,7 @@ namespace Scumm.Engine.Resources.Loaders
 		{
 			var data = new byte[32 * stripHeight];
 
-			var color = (int)reader.ReadBits(codingShift);
+            var color = (int)reader.ReadByte();
 			var stripePixelsLeft = 8 * stripHeight;
 
 			var pixelIndex = 0;
