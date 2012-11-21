@@ -91,18 +91,18 @@ namespace Scumm.Engine.Resources
         public void Draw(SpriteBatch spriteBatch)
         {
             costume.Draw(spriteBatch, position);
-            //if (talk != null)
-            //{
-            //    char[] buffer = new char[talk.Length];
-            //    for (int i = 0; i < talk.Length; ++i)
-            //    {
-            //        if ((talk[i] < 'a' || talk[i] > 'z') && (talk[i] < 'A' || talk[i] > 'Z'))
-            //            buffer[i] = ' ';
-            //        else
-            //            buffer[i] = talk[i];
-            //    }
-            //    spriteBatch.DrawString(ScummEngine.font, new string(buffer), talkPosition * 2, Color.White);
-            //}
+            if (talk != null)
+            {
+                char[] buffer = new char[talk.Length];
+                for (int i = 0; i < talk.Length; ++i)
+                {
+                    if ((talk[i] < 'a' || talk[i] > 'z') && (talk[i] < 'A' || talk[i] > 'Z'))
+                        buffer[i] = ' ';
+                    else
+                        buffer[i] = talk[i];
+                }
+                spriteBatch.DrawString(ScummEngine.font, new string(buffer), talkPosition * 2, Color.White);
+            }
         }
     }
 }

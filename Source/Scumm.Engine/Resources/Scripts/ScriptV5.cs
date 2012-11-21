@@ -1565,7 +1565,8 @@ namespace Scumm.Engine.Resources.Scripts
 
                 // load charset
                 case 18:
-                    resourceManager.Load<Charset>("CHRS", resourceId);
+                    Charset charset = resourceManager.Load<Charset>("CHRS", resourceId);
+                    sceneManager.Charsets.Add(charset);
                     #if !COMPARE
                     this.LogOpCodeInformations("LoadCharSet({0})", resourceId);
                     #endif
