@@ -32,11 +32,11 @@ namespace Scumm.Engine.Resources.Graphics
 
         public void DrawText(SpriteBatch spriteBatch, string text)
         {
-            int positionX = 0;
+            int positionX = 50;
             for (int i = 0; i < text.Length; ++i)
             {
                 ScummChar chr = chars[text[i]];
-                spriteBatch.Draw(chr.pic, new Rectangle(positionX, 0, chr.width*2, chr.height*2), null, Color.White, 0, Vector2.Zero, SpriteEffects.None, 0);
+                spriteBatch.Draw(chr.pic, new Rectangle(positionX, 50, chr.width*2, chr.height*2), null, Color.White, 0, Vector2.Zero, SpriteEffects.None, 0);
                 positionX += chr.width * 2;
             }
 

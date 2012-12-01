@@ -87,7 +87,7 @@ namespace Scumm.Engine.Resources
                 verbs[i].Draw(SpriteBatch);
 
             if (charsets.Count > 0)
-                charsets[0].DrawText(SpriteBatch, "Hi!");
+                charsets[0].DrawText(SpriteBatch, "My name's Guybrush Threepwood");
             
             spriteBatch.End();
         }
