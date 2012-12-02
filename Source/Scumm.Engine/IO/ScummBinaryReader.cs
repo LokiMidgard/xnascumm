@@ -24,7 +24,7 @@ namespace Scumm.Engine.IO
             int i = 0;
             char next = ReadChar();
 
-            while (next != 0)
+            while (next != 0 && next != 65533)
             {
                 str[i] = next;
                 ++i;

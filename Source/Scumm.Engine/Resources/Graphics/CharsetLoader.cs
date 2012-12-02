@@ -31,7 +31,10 @@ namespace Scumm.Engine.Resources.Graphics
             // (huge hack - I have no idea what to do when room is 0)
             if ((byte)parameters["RoomId"] == 0)
                 parameters["RoomId"] = (byte)10;
+
+            long keepPos = reader.BaseStream.Position;
             var roomPalette = this.resourceManager.Load<Room>("ROOM", (byte)parameters["RoomId"]).Palette;
+            reader.BaseStream.Position = keepPos;
 
             // Read charset header information
             var unknown = reader.ReadBytes(6);
@@ -44,7 +47,7 @@ namespace Scumm.Engine.Resources.Graphics
             long initPosition = reader.BaseStream.Position;
 
             byte numBitsPerPixel = reader.ReadByte();
-            byte bitMask = 192;
+            byte bitMask = (byte)(0xFF << (8 - numBitsPerPixel));
 
             byte fontHeight = reader.ReadByte();
             short numChars = reader.ReadInt16();
@@ -79,9 +82,14 @@ namespace Scumm.Engine.Resources.Graphics
                         long colorId = (bits & bitMask) >> (8 - numBitsPerPixel);
                         long color = colormap[colorId];
 
+                        byte alpha = 255;
+                        if (colorId == 0)
+                            alpha = 0;
+                        
                         bytes[(y * charset.Chars[i].width + x) * 4]     = roomPalette[color].R;
                         bytes[(y * charset.Chars[i].width + x) * 4 + 1] = roomPalette[color].G;
                         bytes[(y * charset.Chars[i].width + x) * 4 + 2] = roomPalette[color].B;
+                        bytes[(y * charset.Chars[i].width + x) * 4 + 3] = alpha;
 
                         bits = (byte)(bits << numBitsPerPixel);
                         remainingBits -= numBitsPerPixel;

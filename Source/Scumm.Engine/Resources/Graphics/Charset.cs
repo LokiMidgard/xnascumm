@@ -30,13 +30,15 @@ namespace Scumm.Engine.Resources.Graphics
             
         }
 
-        public void DrawText(SpriteBatch spriteBatch, string text)
+        public void DrawText(SpriteBatch spriteBatch, string text, Vector2 position)
         {
-            int positionX = 50;
-            for (int i = 0; i < text.Length; ++i)
+            int positionX = (int)position.X;
+            for (int i = 0; i < text.Length && text[i] != 0; ++i)
             {
                 ScummChar chr = chars[text[i]];
-                spriteBatch.Draw(chr.pic, new Rectangle(positionX, 50, chr.width*2, chr.height*2), null, Color.White, 0, Vector2.Zero, SpriteEffects.None, 0);
+                if (chr.height == 0)
+                    continue;
+                spriteBatch.Draw(chr.pic, new Rectangle(positionX, (int)position.Y, chr.width*2, chr.height*2), null, Color.White, 0, Vector2.Zero, SpriteEffects.None, 0);
                 positionX += chr.width * 2;
             }
 
