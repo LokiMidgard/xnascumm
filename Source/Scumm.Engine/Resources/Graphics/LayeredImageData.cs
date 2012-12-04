@@ -82,10 +82,13 @@ namespace Scumm.Engine.Resources.Graphics
                         var destinationPixelIndex = ((int)this.layersOffset[i].Y + y) * this.Width * 4 + ((int)this.layersOffset[i].X + x) * 4;
                         var sourcePixelIndex = y * (int)this.layersSize[i].X * 4 + x * 4;
 
-                        data[destinationPixelIndex] = this.layersData[i][sourcePixelIndex];
-                        data[destinationPixelIndex + 1] = this.layersData[i][sourcePixelIndex + 1];
-                        data[destinationPixelIndex + 2] = this.layersData[i][sourcePixelIndex + 2];
-                        data[destinationPixelIndex + 3] = this.layersData[i][sourcePixelIndex + 3];  
+                        if (this.layersData[i][sourcePixelIndex + 3] != 0)
+                        {
+                            data[destinationPixelIndex] = this.layersData[i][sourcePixelIndex];
+                            data[destinationPixelIndex + 1] = this.layersData[i][sourcePixelIndex + 1];
+                            data[destinationPixelIndex + 2] = this.layersData[i][sourcePixelIndex + 2];
+                            data[destinationPixelIndex + 3] = this.layersData[i][sourcePixelIndex + 3];
+                        }
                     }
                 }
             }

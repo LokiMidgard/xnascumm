@@ -60,6 +60,8 @@ namespace Scumm.Engine.Resources
 
         public override void Update(GameTime gameTime)
         {
+            for (int i = 0; i < currentActors.Count; ++i)
+                currentActors[i].Update();
         }
 
         public override void Draw(GameTime gameTime)

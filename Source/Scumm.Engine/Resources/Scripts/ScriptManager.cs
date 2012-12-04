@@ -108,10 +108,14 @@ namespace Scumm.Engine.Resources.Scripts
             }
 
             // Check to see if the variable is a bit variable
-            else if ((variableAddress & 0x8000) != 0 && this.Variables.ContainsKey(variableAddress & 0x7FFF))
+            else if ((variableAddress & 0x8000) != 0)
             {
                 var offset = (byte)variableAddress & 0x7FFF;
-                return ((int)this.BitVariables[(uint)(offset >> 3)] & (1 << (offset & 7))) != 0 ? 1 : 0;
+
+                if(this.BitVariables.ContainsKey((uint)(offset >> 3)))
+                {
+                    return ((int)this.BitVariables[(uint)(offset >> 3)] & (1 << (offset & 7))) != 0 ? 1 : 0;
+                }
             }
 
             // Check to see if the variable is local

@@ -79,14 +79,19 @@ namespace Scumm.Engine.Resources.Graphics
             
             for (int i = 4; i < animationsCount; i++)
             {
-                var animation = LoadAnimation(reader, i, startOffset, animationOffsets, limbOffsets, animationCommandOffset, palette, roomPalette, containsRedirection, (i % 4) == 0 && mirrorWestPositions);
-                costume.Animations.Add(animation);
+                try
+                {
+                    var animation = LoadAnimation(reader, resourceId, i, startOffset, animationOffsets, limbOffsets, animationCommandOffset, palette, roomPalette, containsRedirection, (i % 4) == 0 && mirrorWestPositions);
+                    costume.Animations.Add(animation);
+                }
+                // TODO: Remove the empty catch later
+                catch { }
             }
             
             return costume;
         }
 
-        private CostumeAnimation LoadAnimation(ScummBinaryReader reader, int animationIndex, long startOffset, ushort[] animationOffsets, ushort[] limbOffsets, ushort animationCommandOffset, byte[] palette, Color[] roomPalette, bool containsRedirection, bool mirror)
+        private CostumeAnimation LoadAnimation(ScummBinaryReader reader, string resourceId, int animationIndex, long startOffset, ushort[] animationOffsets, ushort[] limbOffsets, ushort animationCommandOffset, byte[] palette, Color[] roomPalette, bool containsRedirection, bool mirror)
         {
             if (animationOffsets[animationIndex] == 0)
             {
@@ -192,12 +197,12 @@ namespace Scumm.Engine.Resources.Graphics
                 costumeFrame.Data.SetData(textureData);
 
                 costumeAnimation.Frames.Add(costumeFrame);
-
-                //if (!Directory.Exists("DebugAnims"))
-                //{
-                //    Directory.CreateDirectory("DebugAnims");
-                //}
-                //costumeFrame.Data.SaveAsPng(File.Create(string.Format("DebugAnims\\Anim{0}_{1}.png", animationIndex, currentFrameIndex)), costumeFrame.Data.Width, costumeFrame.Data.Height);
+                
+                if (!Directory.Exists("DebugAnims\\" + resourceId))
+                {
+                    Directory.CreateDirectory("DebugAnims\\" + resourceId);
+                }
+                costumeFrame.Data.SaveAsPng(File.Create(string.Format("DebugAnims\\" + resourceId + "\\Anim{0}_{1}.png", animationIndex, currentFrameIndex)), costumeFrame.Data.Width, costumeFrame.Data.Height);
 
                 reader.BaseStream.Position = startAnimationPosition;
                 currentFrameIndex++;

@@ -17,12 +17,12 @@ namespace Scumm.Engine.Resources
         int standFrame;
         int talkStartFrame, talkStopFrame;
         int walkFrame;
+        int direction;
 
         int layer;
         Vector2 position;
 
         byte roomId;
-        int scale;
 
         string talk;
         int talkColor;
@@ -48,12 +48,19 @@ namespace Scumm.Engine.Resources
             get { return position; }
             set { position = value; }
         }
+        public int Elevation
+        {
+            get { return elevation; }
+            set { elevation = value; }
+        }
         public ScummString Name
         {
             get { return name; }
             set { name = value; }
         }
-
+        public int ScaleX { get; set; }
+        public int ScaleY { get; set; }
+        public bool IsMoving { get; set; }
         #endregion
 
         public void Init(int mode)
@@ -75,6 +82,45 @@ namespace Scumm.Engine.Resources
             this.standFrame = 3;
             this.talkStartFrame = 4;
             this.talkStopFrame = 5;
+
+            this.ScaleX = 255;
+            this.ScaleY = 255;
+        }
+
+        public void Animate(int animation)
+        {
+            var command = animation / 4;
+            var direction = animation % 4;
+
+            // Convert into old cmd code
+            command = 0x3F - command + 2;
+
+            switch (command)
+            {
+                case 2:				// stop walking
+                    //startAnimActor(_standFrame);
+                    //stopActorMoving();
+                    Console.WriteLine("Actor => Stop Talking");
+                    break;
+
+                case 3:				// change direction immediatly
+                    //_moving &= ~MF_TURN;
+                    //setDirection(dir);
+                    this.direction = direction;
+
+                    Console.WriteLine("Actor => Change direction immediatly");
+                    break;
+
+                case 4:				// turn to new direction
+                    //turnToDirection(dir);
+                    Console.WriteLine("Actor => Turn to new direction");
+                    break;
+
+                default:
+                    //startAnimActor(anim);
+                    Console.WriteLine("Actor => Start animation");
+                    break;
+            }
         }
 
         public void PutActor(int x, int y)
@@ -83,14 +129,26 @@ namespace Scumm.Engine.Resources
             this.position = new Vector2(x, y);
         }
 
+        public void StartWalk(int x, int y)
+        {
+            // TODO : complete this method
+
+            this.IsMoving = true;
+        }
+
         public void Talk(string text)
         {
             talk = text;
         }
 
+        public void Update()
+        {
+
+        }
+
         public void Draw(SpriteBatch spriteBatch)
         {
-            costume.Draw(spriteBatch, position);
+            costume.Draw(spriteBatch, new Vector2(position.X, position.Y - elevation), direction, this.ScaleX, this.ScaleY);
             //if (talk != null)
             //{
             //    char[] buffer = new char[talk.Length];

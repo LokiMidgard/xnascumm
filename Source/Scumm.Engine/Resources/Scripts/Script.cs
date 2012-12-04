@@ -74,10 +74,14 @@ namespace Scumm.Engine.Resources.Scripts
         public void Run(int[] arguments, bool resetScriptCursor)
         {
             #if !COMPARE
-                this.logFile.WriteLine("---------- Running Script {0} -----------", this.ResourceId);
+            this.logFile.WriteLine("---------- Running Script {0} -----------", this.ResourceId);
             #endif
 
-            scriptManager.ActiveScripts.Add(this);
+            if (scriptManager.ActiveScripts.Contains(this) == false)
+            {
+                scriptManager.ActiveScripts.Add(this);
+            }
+
             this.Status = ScriptStatus.Running;
 
             // Init local variables
@@ -129,6 +133,7 @@ namespace Scumm.Engine.Resources.Scripts
         public void Stop()
         {
             this.Status = ScriptStatus.Stopped;
+            scriptManager.ActiveScripts.Remove(this);
         }
 
         public void WriteLocalVariable(uint variableAddress, int value)
