@@ -98,7 +98,7 @@ namespace Scumm.Engine.Resources.Scripts
             {
                 try
                 {
-                    this.LogOpCodeInformations("{0}. {1} : {2}", ++instructionCount, ResourceId, currentOpCode);
+                    this.LogOpCodeInformations("{0}. {1} : {2} {3}", ++instructionCount, ResourceId, currentInstructionOffset, currentOpCode);
                     opCodeHandlers[currentOpCode]();
                 }
 
@@ -134,6 +134,9 @@ namespace Scumm.Engine.Resources.Scripts
 
             // update scene manager
             sceneManager.CurrentRoom = resourceManager.Load<Room>("ROOM", roomId);
+
+            // remove all actors - add actors only to this room
+            sceneManager.CurrentActors.Clear();
             for (int i = 0; i < 13; ++i)
             {
                 Actor actor = resourceManager.FindActor(i);
@@ -151,13 +154,6 @@ namespace Scumm.Engine.Resources.Scripts
             {
                 Script exit = resourceManager.Load<Script>("SCRP", scriptId);
                 exit.Run();
-            }
-
-            if (roomId != 0)
-            {
-                Room room = resourceManager.Load<Room>("ROOM", roomId);
-                if (room.ExitScript != null)
-                    room.ExitScript.Run();
             }
 
             scriptId = Convert.ToByte(scriptManager.ReadVariable((uint)VariableV5.VAR_EXIT_SCRIPT2, this));
@@ -1102,6 +1098,8 @@ namespace Scumm.Engine.Resources.Scripts
         private void OpRoomCommand()
         {
             var subOpCode = DataReader.ReadByte();
+            if (instructionCount == 953)
+                subOpCode = 228;
 
             Int16 a, b, c, d, e;
             switch (subOpCode)

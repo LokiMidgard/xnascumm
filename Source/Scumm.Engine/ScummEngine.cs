@@ -92,7 +92,7 @@ namespace Scumm.Engine
             // Read game files
             ResourceManager.LoadGame();
 
-            this.ScriptManager.Run(0);
+            this.ScriptManager.Run(110);
         }
 
         protected override void UnloadContent()

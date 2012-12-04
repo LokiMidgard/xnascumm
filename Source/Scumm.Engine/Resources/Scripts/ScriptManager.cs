@@ -102,25 +102,31 @@ namespace Scumm.Engine.Resources.Scripts
         public object ReadVariable(uint variableAddress, Script script)
         {
             // Check to see if the variable is global
-            if ((variableAddress & 0xF000) == 0 && this.Variables.ContainsKey(variableAddress))
+            if ((variableAddress & 0xF000) == 0)
             {
+                if(!(this.Variables.ContainsKey(variableAddress)))
+                    this.Variables[variableAddress] = 0;
+
                 return this.Variables[variableAddress];
             }
 
             // Check to see if the variable is a bit variable
-            else if ((variableAddress & 0x8000) != 0 && this.Variables.ContainsKey(variableAddress & 0x7FFF))
+            if ((variableAddress & 0x8000) != 0)
             {
+                if(!(this.BitVariables.ContainsKey(variableAddress & 0x7FFF)))
+                    this.BitVariables[variableAddress & 0x7FFF] = 0;
+
                 var offset = (byte)variableAddress & 0x7FFF;
                 return ((int)this.BitVariables[(uint)(offset >> 3)] & (1 << (offset & 7))) != 0 ? 1 : 0;
             }
 
             // Check to see if the variable is local
-            else if ((variableAddress & 0x4000) != 0)
+            if ((variableAddress & 0x4000) != 0)
             {
                 return script.ReadLocalVariable(variableAddress & 0xFFF);
             }
 
-            // Variable was never written
+            // Should never happen
             return 0;
         }
 
