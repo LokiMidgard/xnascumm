@@ -27,6 +27,7 @@ namespace Scumm.Engine.Resources
         string talk;
         int talkColor;
         Vector2 talkPosition;
+        Charset charset;
         int width;
 
         ScummString name;
@@ -47,6 +48,11 @@ namespace Scumm.Engine.Resources
         {
             get { return position; }
             set { position = value; }
+        }
+        public Vector2 TalkPosition
+        {
+            get { return talkPosition; }
+            set { talkPosition = value; }
         }
         public int Elevation
         {
@@ -135,10 +141,10 @@ namespace Scumm.Engine.Resources
 
             this.IsMoving = true;
         }
-
-        public void Talk(string text)
+        public void Talk(string text, Charset textCharset)
         {
             talk = text;
+            charset = textCharset;
         }
 
         public void Update()
@@ -148,19 +154,12 @@ namespace Scumm.Engine.Resources
 
         public void Draw(SpriteBatch spriteBatch)
         {
+            if (costume != null)
             costume.Draw(spriteBatch, new Vector2(position.X, position.Y - elevation), direction, this.ScaleX, this.ScaleY);
-            //if (talk != null)
-            //{
-            //    char[] buffer = new char[talk.Length];
-            //    for (int i = 0; i < talk.Length; ++i)
-            //    {
-            //        if ((talk[i] < 'a' || talk[i] > 'z') && (talk[i] < 'A' || talk[i] > 'Z'))
-            //            buffer[i] = ' ';
-            //        else
-            //            buffer[i] = talk[i];
-            //    }
-            //    spriteBatch.DrawString(ScummEngine.font, new string(buffer), talkPosition * 2, Color.White);
-            //}
+   
+
+            if (talk != null && charset != null)
+                charset.DrawText(spriteBatch, talk, talkPosition*2);
         }
     }
 }

@@ -96,6 +96,7 @@
     <Compile Include="IO\ScummBinaryReader.cs" />
     <Compile Include="IO\ScummStream.cs" />
     <Compile Include="Resources\Actor.cs" />
+    <Compile Include="Resources\Graphics\Camera.cs" />
     <Compile Include="Resources\Graphics\Charset.cs" />
     <Compile Include="Resources\Graphics\CharsetLoader.cs" />
     <Compile Include="Resources\Graphics\Costume.cs" />
@@ -120,9 +121,10 @@
     <Compile Include="Resources\Scripts\ScriptLoader.cs" />
     <Compile Include="Resources\Scripts\ScriptManager.cs" />
     <Compile Include="Resources\Scripts\Script.cs" />
+    <Compile Include="Resources\Scripts\Version 5\ScriptStateV5.cs" />
     <Compile Include="Resources\Scripts\ScriptStatus.cs" />
-    <Compile Include="Resources\Scripts\ScriptV5.cs" />
-    <Compile Include="Resources\Scripts\VariableV5.cs" />
+    <Compile Include="Resources\Scripts\Version 5\ScriptV5.cs" />
+    <Compile Include="Resources\Scripts\Version 5\VariableV5.cs" />
     <Compile Include="Resources\ScummString.cs" />
     <Compile Include="Resources\StringLoader.cs" />
     <Compile Include="Resources\Verb.cs" />

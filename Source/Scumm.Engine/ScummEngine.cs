@@ -81,7 +81,7 @@ namespace Scumm.Engine
             ResourceManager.AddLoader("RMIM", new ImageLoader(GraphicsDevice));
             ResourceManager.AddLoader("SCRP", new ScriptLoader(ScriptManager, SceneManager, this.logFile));
             ResourceManager.AddLoader("STRN", new StringLoader());
-            ResourceManager.AddLoader("CHRS", new CharsetLoader());
+            ResourceManager.AddLoader("CHRS", new CharsetLoader(GraphicsDevice));
             ResourceManager.AddLoader("COST", new CostumeLoader(GraphicsDevice));
             ResourceManager.AddLoader("VERB", new VerbLoader());
             ResourceManager.AddLoader("OBJC", new ObjectLoader());
@@ -93,9 +93,8 @@ namespace Scumm.Engine
             ResourceManager.LoadGame();
 
             //this.ScriptManager.Run(456);
-            this.ScriptManager.Run(0);
+            this.ScriptManager.Run(110);
         }
-
         protected override void UnloadContent()
         {
             base.UnloadContent();

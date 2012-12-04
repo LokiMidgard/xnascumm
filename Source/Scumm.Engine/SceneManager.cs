@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Scumm.Engine.Resources.Graphics;
 
 namespace Scumm.Engine.Resources
 {
@@ -17,6 +18,13 @@ namespace Scumm.Engine.Resources
         private List<Actor> currentActors;
         private List<Object> inventory;
         private List<Verb> verbs;
+        private List<Charset> charsets;
+
+        public List<Charset> Charsets
+        {
+            get { return charsets; }
+            set { charsets = value; }
+        }
 
         public List<Verb> Verbs
         {
@@ -51,6 +59,7 @@ namespace Scumm.Engine.Resources
             currentActors = new List<Actor>();
             inventory = new List<Object>();
             verbs = new List<Verb>();
+            charsets = new List<Charset>();
         }
 
         protected override void LoadContent()
@@ -75,10 +84,10 @@ namespace Scumm.Engine.Resources
 
             for(int i = 0; i < currentActors.Count; ++i)
                 currentActors[i].Draw(SpriteBatch);
-
+            
             for (int i = 1; i < verbs.Count; ++i)
                 verbs[i].Draw(SpriteBatch);
-
+            
             spriteBatch.End();
         }
 

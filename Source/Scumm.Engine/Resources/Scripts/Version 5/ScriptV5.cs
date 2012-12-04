@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text;
 using Scumm.Engine.Resources.Graphics;
 using System.IO;
+using Microsoft.Xna.Framework;
 namespace Scumm.Engine.Resources.Scripts
 {
     public class ScriptV5 : Script
     {
         static int instructionCount = 0;
+        private ScriptStateV5 scriptState = new ScriptStateV5();
 
         private Action[] opCodeHandlers;
         private uint currentInstructionOffset;
@@ -100,7 +102,7 @@ namespace Scumm.Engine.Resources.Scripts
             {
                 try
                 {
-                    //this.LogOpCodeInformations("{0} : {1}", ResourceId, currentOpCode);
+                    this.LogOpCodeInformations("{0}. {1} : {2} {3}", ++instructionCount, ResourceId, currentInstructionOffset, currentOpCode);
                     opCodeHandlers[currentOpCode]();
                 }
 
@@ -137,6 +139,9 @@ namespace Scumm.Engine.Resources.Scripts
             // update scene manager
             sceneManager.CurrentActors.Clear();
             sceneManager.CurrentRoom = resourceManager.Load<Room>("ROOM", roomId);
+
+            // remove all actors - add actors only to this room
+            sceneManager.CurrentActors.Clear();
             for (int i = 0; i < 13; ++i)
             {
                 Actor actor = resourceManager.FindActor(i);
@@ -154,13 +159,6 @@ namespace Scumm.Engine.Resources.Scripts
             {
                 Script exit = resourceManager.Load<Script>("SCRP", scriptId);
                 exit.Run();
-            }
-
-            if (roomId != 0)
-            {
-                Room room = resourceManager.Load<Room>("ROOM", roomId);
-                if (room.ExitScript != null)
-                    room.ExitScript.Run();
             }
 
             scriptId = Convert.ToByte(scriptManager.ReadVariable((uint)VariableV5.VAR_EXIT_SCRIPT2, this));
@@ -251,12 +249,11 @@ namespace Scumm.Engine.Resources.Scripts
             {
                 switch (currentOpCode)
                 {
-                    case 0: /* set string xy */
-                        GetVarOrDirectWord(0x80, currentOpCode);
-                        GetVarOrDirectWord(0x40, currentOpCode);
-                        //_stringXpos[textSlot] = getVarOrDirectWord(0x80);
-                        //_stringYpos[textSlot] = getVarOrDirectWord(0x40);
-                        //_stringOverhead[textSlot] = 0;
+                    case 0: // set string xy
+                        Vector2 position;
+                        position.X = GetVarOrDirectWord(0x80, currentOpCode);
+                        position.Y = GetVarOrDirectWord(0x40, currentOpCode);
+                        scriptState.StringPos = position;
                         break;
                     case 1: /* color */
                         GetVarOrDirectByte(0x80, currentOpCode);
@@ -286,9 +283,12 @@ namespace Scumm.Engine.Resources.Scripts
                         switch (textSlot)
                         {
                             case 0:
-                                Actor actor = resourceManager.FindActor(actorId);
-                                actor.Talk(b); 
-                                break;
+                                {
+                                    Actor actor = resourceManager.FindActor(actorId);
+                                    Charset charset = resourceManager.Load<Charset>("CHRS", 2, new Dictionary<string, object>() { { "RoomId", scriptManager.CurrentRoomId } }); ;
+                                    actor.Talk(b, charset);
+                                    break;
+                                }
                             //case 1: drawString(1); break;
                             //case 2: unkMessage1(); break;
                             //case 3: unkMessage2(); break;
@@ -1127,6 +1127,8 @@ namespace Scumm.Engine.Resources.Scripts
         private void OpRoomCommand()
         {
             var subOpCode = DataReader.ReadByte();
+            if (instructionCount == 953)
+                subOpCode = 228;
 
             Int16 a, b, c, d, e;
             switch (subOpCode)
@@ -1609,7 +1611,7 @@ namespace Scumm.Engine.Resources.Scripts
 
                 // load charset
                 case 18:
-                    resourceManager.Load<Charset>("CHRS", resourceId);
+                    Charset charset = resourceManager.Load<Charset>("CHRS", resourceId, new Dictionary<string, object>() { { "RoomId", scriptManager.CurrentRoomId } });
                     #if !COMPARE
                     this.LogOpCodeInformations("LoadCharSet({0})", resourceId);
                     #endif
