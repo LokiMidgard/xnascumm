@@ -44,11 +44,25 @@ namespace Scumm.Engine.Resources.Loaders
                 room.Palette[i].B = reader.ReadByte();
             }
 
+            // Read background image
+            room.BackgroundImage = ResourceManager.Load<Image>("RMIM", new Dictionary<string, object>() { { "Width", (int)width }, { "Height", (int)height }, { "RoomOffset", roomOffset }, { "RoomPalette", room.Palette } });
+
             room.Objects = new Object[objectsCount];
+
+            Image[] images = null;
+            if(resourceId == "ROOM_10")
+            {
+                images = new Image[objectsCount];
+                for (int i = 0; i < objectsCount; ++i)
+                {
+                    images[i] = ResourceManager.Load<Image>("OBIM", new Dictionary<string, object>() { { "RoomPalette", room.Palette } });
+                }
+            }
             for (int i = 0; i < objectsCount; ++i)
             {
                 Object obj = ResourceManager.Load<Object>("OBJC", new Dictionary<string, object>());
                 room.Objects[i] = obj;
+                if (resourceId == "ROOM_10") room.Objects[i].Image = images[i];
             }
 
             // Read entry/exit scripts
@@ -69,10 +83,6 @@ namespace Scumm.Engine.Resources.Loaders
                     }
                 }
             }
-
-            // Read background image
-            room.BackgroundImage = ResourceManager.Load<Image>("RMIM", new Dictionary<string, object>() { { "Width", (int)width }, { "Height", (int)height }, { "RoomOffset", roomOffset }, { "RoomPalette", room.Palette } });
-
 
             return room;
         }

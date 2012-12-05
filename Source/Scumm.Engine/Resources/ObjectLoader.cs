@@ -16,13 +16,13 @@ namespace Scumm.Engine.Resources
         public override Resource LoadResourceData(ScummBinaryReader reader, string resourceId, IDictionary<string, object> parameters)
         {
             reader.FindDataBlock("OBCD");
-            
             // read header
             uint blockSize = reader.FindDataBlock("CDHD");
             UInt16 id = reader.ReadUInt16();
             var data = reader.ReadBytes((int)blockSize - 10);
 
             var obj = ResourceManager.FindObject(id);
+            //obj.Image = image;
             if (id == 488)
             {
                 // read verb block

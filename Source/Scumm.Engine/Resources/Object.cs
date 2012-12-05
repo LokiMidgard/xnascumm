@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Scumm.Engine.Resources.Scripts;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Scumm.Engine.Resources
 {
@@ -58,6 +59,18 @@ namespace Scumm.Engine.Resources
         public Byte getOwnerState()
         {
             return (Byte)(ownerState & 0x0F);
+        }
+
+        public Image Image
+        {
+            get { return image; }
+            set { image = value; }
+        }
+
+        public void Draw(SpriteBatch spriteBatch)
+        {
+            if(image != null)
+                image.Draw(spriteBatch);
         }
     }
 }

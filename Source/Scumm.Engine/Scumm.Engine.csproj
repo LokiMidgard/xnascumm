@@ -108,6 +108,8 @@
     <Compile Include="Resources\Graphics\EncoderType.cs" />
     <Compile Include="Resources\Graphics\LayeredImageData.cs" />
     <Compile Include="Resources\Graphics\ImageLoader.cs" />
+    <Compile Include="Resources\Graphics\ObjectImageLoader.cs" />
+    <Compile Include="Resources\Graphics\RoomImageLoader.cs" />
     <Compile Include="Resources\Graphics\Text.cs" />
     <Compile Include="Resources\Object.cs" />
     <Compile Include="Resources\ObjectLoader.cs" />

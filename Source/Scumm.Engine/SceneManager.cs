@@ -84,7 +84,10 @@ namespace Scumm.Engine.Resources
 
             for(int i = 0; i < currentActors.Count; ++i)
                 currentActors[i].Draw(SpriteBatch);
-            
+
+            for (int i = 0; i < inventory.Count; ++i)
+                inventory[i].Draw(SpriteBatch);
+
             for (int i = 1; i < verbs.Count; ++i)
                 verbs[i].Draw(SpriteBatch);
             
