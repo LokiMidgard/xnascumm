@@ -53,7 +53,7 @@ namespace Scumm.Engine.Resources.Scripts
         public ScriptStatus Status
         {
             get;
-            protected set;
+            set;
         }
 
         public void Continue()

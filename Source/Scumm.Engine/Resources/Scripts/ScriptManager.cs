@@ -25,6 +25,16 @@ namespace Scumm.Engine.Resources.Scripts
             // Initialize variables
             WriteVariable((uint)VariableV5.VAR_VERSION, 21);
             WriteVariable((uint)VariableV5.VAR_DEBUGMODE, 1);
+
+            WriteVariable((uint)VariableV5.VAR_CURRENTDRIVE, 0);
+            WriteVariable((uint)VariableV5.VAR_FIXEDDISK,    true);
+            WriteVariable((uint)VariableV5.VAR_SOUNDCARD,    0);
+            WriteVariable((uint)VariableV5.VAR_VIDEOMODE,    19);
+            WriteVariable((uint)VariableV5.VAR_HEAPSPACE,    0);
+            WriteVariable((uint)VariableV5.VAR_INPUTMODE,    0);
+            WriteVariable((uint)VariableV5.VAR_SOUNDPARAM,   0);
+            WriteVariable((uint)VariableV5.VAR_SOUNDPARAM2,  0);
+            WriteVariable((uint)VariableV5.VAR_SOUNDPARAM3,  0);
         }
 
         public byte CurrentRoomId
@@ -92,13 +102,31 @@ namespace Scumm.Engine.Resources.Scripts
         public void RunScript(int scriptId, int[] arguments)
         {
             // TODO: Implement slot system for multi threaded script execution at each frame
-
             var script = resourceManager.Load<Script>("SCRP", (byte)scriptId);
 
             this.ActiveScripts.Add(script);
             script.Run(arguments);
         }
-                 
+
+        public void FreezeScripts(byte flag, string currentScript)
+        {
+            for (int i = 0; i < ActiveScripts.Count; ++i)
+            {
+                if(String.Format("SCRP_{0}", i) == currentScript)
+                    continue;
+                if (ActiveScripts[i].Status != ScriptStatus.Running)// && (ActiveScripts[i].unk1 || flag >= 0x80))
+                    ActiveScripts[i].Status |= ScriptStatus.Frozen;
+            }
+        }
+
+        public void UnfreezeScripts()
+        {
+            for (int i = 0; i < ActiveScripts.Count; ++i)
+            {
+                ActiveScripts[i].Status &= ~ScriptStatus.Frozen;
+            }
+        }
+
         public object ReadVariable(uint variableAddress, Script script)
         {
             // Check to see if the variable is global

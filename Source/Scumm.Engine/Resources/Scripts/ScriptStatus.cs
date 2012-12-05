@@ -5,10 +5,12 @@ using System.Text;
 
 namespace Scumm.Engine.Resources.Scripts
 {
+    [Flags]
     public enum ScriptStatus
     {
         Running,
         Stopped,
-        Paused
+        Paused,
+        Frozen
     }
 }

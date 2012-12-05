@@ -138,7 +138,6 @@ namespace Scumm.Engine.Resources
         public void StartWalk(int x, int y)
         {
             // TODO : complete this method
-
             this.IsMoving = true;
         }
         public void Talk(string text, Charset textCharset)
@@ -155,8 +154,7 @@ namespace Scumm.Engine.Resources
         public void Draw(SpriteBatch spriteBatch)
         {
             if (costume != null)
-            costume.Draw(spriteBatch, new Vector2(position.X, position.Y - elevation), direction, this.ScaleX, this.ScaleY);
-   
+                costume.Draw(spriteBatch, new Vector2(position.X, position.Y - elevation), direction, this.ScaleX, this.ScaleY);
 
             if (talk != null && charset != null)
                 charset.DrawText(spriteBatch, talk, talkPosition*2);

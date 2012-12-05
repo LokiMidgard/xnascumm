@@ -1121,7 +1121,13 @@ namespace Scumm.Engine.Resources.Scripts
 
         private void OpFreezeScripts()
         {
-            var scripts = DataReader.ReadByte();
+            var flag = DataReader.ReadByte();
+
+            if (flag != 0)
+                scriptManager.FreezeScripts(flag, this.ResourceId);
+            else
+                scriptManager.UnfreezeScripts();
+
         }
 
         private void OpRoomCommand()
@@ -1426,6 +1432,10 @@ namespace Scumm.Engine.Resources.Scripts
                     break;
                 case 4:
                     scriptManager.WriteVariable((uint)VariableV5.VAR_USERPUT, 0, this);
+                    break;
+                case 6:
+                    break;
+                case 8:
                     break;
                 // init charset
                 case 13:

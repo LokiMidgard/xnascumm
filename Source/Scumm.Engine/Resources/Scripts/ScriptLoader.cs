@@ -40,6 +40,10 @@ namespace Scumm.Engine.Resources.Scripts
                         resourceId = String.Format("LSCRP_{0}", id);
                         --blockSize;
                     }
+                    else if ((string)parameters["Type"] == "EXCD")
+                        resourceId = String.Format("SCRP_{0}", 10001);
+                    else if ((string)parameters["Type"] == "ENCD")
+                        resourceId = String.Format("SCRP_{0}", 10002);
                 }
                 else
                 {

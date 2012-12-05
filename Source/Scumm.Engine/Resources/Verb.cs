@@ -44,8 +44,6 @@ namespace Scumm.Engine.Resources
                 else
                     buffer[i] = stream[i];
             }
-
-            //spriteBatch.DrawString(ScummEngine.font, new string(buffer), position * 2, Color.White);
         }
     }
 }

@@ -122,11 +122,6 @@
       <Project>{A0EA1F74-9E5D-43BB-99E5-D7BFE751978C}</Project>
       <Name>Scumm.Engine</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Scumm.PCContent\Scumm.PCContent.contentproj">
-      <Project>{B5E57024-A3D0-4AE4-929E-AE2924733E60}</Project>
-      <Name>Scumm.PCContent</Name>
-      <XnaReferenceType>Content</XnaReferenceType>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
