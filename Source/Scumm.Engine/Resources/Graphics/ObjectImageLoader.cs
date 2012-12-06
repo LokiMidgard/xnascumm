@@ -32,16 +32,18 @@ namespace Scumm.Engine.Resources.Graphics
             UInt16 width = reader.ReadUInt16();
             UInt16 height = reader.ReadUInt16();
 
-            // TODO: Add code to take into account multiple image blocks (object images)
-            if (reader.FindDataBlock("IM01") == 0)
-            {
-                throw new InvalidOperationException("Could not find image block.");
-            }
-
             Image image = new Image(width, height);
             var roomPalette = (Color[])parameters["RoomPalette"];
 
-            ReadImageDataBlock(reader, image, roomPalette);
+            // TODO: Add code to take into account multiple image blocks (object images)
+            if (numImages > 0)
+            {
+                if (reader.FindDataBlock("IM01") == 0)
+                {
+                    throw new InvalidOperationException("Could not find image block.");
+                }
+                ReadImageDataBlock(reader, image, roomPalette);
+            }
 
             return image;
         }

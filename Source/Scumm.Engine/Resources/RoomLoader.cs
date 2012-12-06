@@ -49,10 +49,9 @@ namespace Scumm.Engine.Resources.Loaders
 
             room.Objects = new Object[objectsCount];
 
-            Image[] images = null;
-            if(resourceId == "ROOM_10")
+            Image[] images  = new Image[objectsCount];
+            if (resourceId == "ROOM_38")
             {
-                images = new Image[objectsCount];
                 for (int i = 0; i < objectsCount; ++i)
                 {
                     images[i] = ResourceManager.Load<Image>("OBIM", new Dictionary<string, object>() { { "RoomPalette", room.Palette } });
@@ -62,7 +61,7 @@ namespace Scumm.Engine.Resources.Loaders
             {
                 Object obj = ResourceManager.Load<Object>("OBJC", new Dictionary<string, object>());
                 room.Objects[i] = obj;
-                if (resourceId == "ROOM_10") room.Objects[i].Image = images[i];
+                room.Objects[i].Image = images[i];
             }
 
             // Read entry/exit scripts

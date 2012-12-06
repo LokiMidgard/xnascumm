@@ -170,7 +170,7 @@ namespace Scumm.Engine.IO
             byteArray = ReadBytes(4);
 
             var currentBlockType = enc.GetString(byteArray);
-            var itemSize = ReadUInt32BigEndian();
+            UInt32 itemSize = 0;
 
             while (BaseStream.Position <= BaseStream.Length)
             {
