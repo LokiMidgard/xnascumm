@@ -11,6 +11,7 @@ namespace Scumm.Engine.Resources
     public class Actor
     {
         Costume costume;
+        ActorWalkData walkData;
         int elevation;
 
         int initFrame;
@@ -135,11 +136,84 @@ namespace Scumm.Engine.Resources
             this.position = new Vector2(x, y);
         }
 
-        public void StartWalk(int x, int y)
+        public void StartWalk(int x, int y, int direction)
         {
+            //AdjustBoxResult abr;
+            //abr = adjustXYToBeInBox(destX, destY);
+
+            //if (!isInCurrentRoom())
+            //{
+            //    _pos.x = abr.x;
+            //    _pos.y = abr.y;
+            //    if (!_ignoreTurns && dir != -1)
+            //        _facing = dir;
+            //    return;
+            //}
+
+           
+            //if (_ignoreBoxes)
+            //{
+            //    abr.box = kInvalidBox;
+            //    _walkbox = kInvalidBox;
+            //}
+            //else
+            //{
+            //    if (_vm->checkXYInBoxBounds(_walkdata.destbox, abr.x, abr.y))
+            //    {
+            //        abr.box = _walkdata.destbox;
+            //    }
+            //    else
+            //    {
+            //        abr = adjustXYToBeInBox(abr.x, abr.y);
+            //    }
+            //    if (_moving && _walkdata.destdir == dir && _walkdata.dest.x == abr.x && _walkdata.dest.y == abr.y)
+            //        return;
+            //}
+
+            //if (_pos.x == abr.x && _pos.y == abr.y)
+            //{
+            //    if (dir != _facing)
+            //        turnToDirection(dir);
+            //    return;
+            //}
+
+            this.walkData = new ActorWalkData();
+            walkData.Destination = new Vector2(x, y);
+            //_walkdata.destbox = abr.box;
+            walkData.DestinationDirection = direction;
+            //_moving = (_moving & MF_IN_LEG) | MF_NEW_LEG;
+            //_walkdata.point3.x = 32000;
+
+            //_walkdata.curbox = _walkbox;
+
             // TODO : complete this method
             this.IsMoving = true;
         }
+
+        private void WalkStep()
+        {
+            int x = (int)position.X;
+            int y = (int)position.Y; ;
+
+            if (position == this.walkData.Destination)
+            {
+                this.IsMoving = false;
+                return;
+            }
+
+            if (position.X != this.walkData.Destination.X)
+            {
+                x = (int)position.X + (int)Math.Sign(this.walkData.Destination.X - position.X);
+            }
+
+            if (position.Y != this.walkData.Destination.Y)
+            {
+                y = (int)position.Y + (int)Math.Sign(this.walkData.Destination.Y - position.Y);
+            }
+
+            this.position = new Vector2(x, y);
+        }
+
         public void Talk(string text, Charset textCharset)
         {
             talk = text;
@@ -148,7 +222,10 @@ namespace Scumm.Engine.Resources
 
         public void Update()
         {
-
+            if (this.IsMoving)
+            {
+                WalkStep();
+            }
         }
 
         public void Draw(SpriteBatch spriteBatch)

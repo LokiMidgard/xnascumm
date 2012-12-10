@@ -1581,7 +1581,7 @@ namespace Scumm.Engine.Resources.Scripts
             var x = GetVarOrDirectWord(0x40, currentOpCode);
             var y = GetVarOrDirectWord(0x20, currentOpCode);
 
-            actor.StartWalk(x, y);
+            actor.StartWalk(x, y, -1);
 
             #if !COMPARE
             this.LogOpCodeInformations("Actor{0}.WalkTo({1}, {2})", actorId, x, y);

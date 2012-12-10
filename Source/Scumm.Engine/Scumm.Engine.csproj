@@ -96,6 +96,7 @@
     <Compile Include="IO\ScummBinaryReader.cs" />
     <Compile Include="IO\ScummStream.cs" />
     <Compile Include="Resources\Actor.cs" />
+    <Compile Include="Resources\ActorWalkData.cs" />
     <Compile Include="Resources\Graphics\Camera.cs" />
     <Compile Include="Resources\Graphics\Charset.cs" />
     <Compile Include="Resources\Graphics\CharsetLoader.cs" />
