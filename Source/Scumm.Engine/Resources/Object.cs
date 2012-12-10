@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Scumm.Engine.Resources.Scripts;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework;
 
 namespace Scumm.Engine.Resources
 {
@@ -15,6 +16,8 @@ namespace Scumm.Engine.Resources
         string name;
 
         ScriptV5[] verbs;
+
+        Vector2 position;
         Image image;
 
         public Object()
@@ -44,7 +47,16 @@ namespace Scumm.Engine.Resources
             get { return name; }
             set { name = value; }
         }
-
+        public Vector2 Position
+        {
+            get { return position; }
+            set { position = value; }
+        }
+        public Image Image
+        {
+            get { return image; }
+            set { image = value; }
+        }
         public ScriptV5[] VerbScript
         {
             get { return verbs; }
@@ -60,17 +72,11 @@ namespace Scumm.Engine.Resources
         {
             return (Byte)(ownerState & 0x0F);
         }
-
-        public Image Image
-        {
-            get { return image; }
-            set { image = value; }
-        }
-
+        
         public void Draw(SpriteBatch spriteBatch)
         {
             if(image != null)
-                image.Draw(spriteBatch);
+                image.Draw(spriteBatch, position);
         }
     }
 }

@@ -34,10 +34,10 @@ namespace Scumm.Engine.Resources
             internal set;
         }
 
-        public void Draw(SpriteBatch spriteBatch)
+        public void Draw(SpriteBatch spriteBatch, Vector2 position)
         {
             if(Texture != null)
-                spriteBatch.Draw(Texture, new Rectangle(0, 0, Width*2, Height*2), Color.White);
+                spriteBatch.Draw(Texture, new Rectangle((int)position.X * 2, (int)position.Y * 2, Width * 2, Height * 2), Color.White);
         }
     }
 }

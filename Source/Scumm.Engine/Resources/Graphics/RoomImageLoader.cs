@@ -21,8 +21,6 @@ namespace Scumm.Engine.Resources.Graphics
             var image = new Image((int)parameters["Width"], (int)parameters["Height"]);
             var roomPalette = (Color[])parameters["RoomPalette"];
 
-            // TODO: Pass in the parameters information of what of image we need to process (Background or object image)
-
             // Read the image header
             if (reader.FindDataBlock("RMIH", (uint)parameters["RoomOffset"]) == 0)
             {

@@ -18,11 +18,13 @@ namespace Scumm.Engine.Resources.Graphics
 
         public override Resource LoadResourceData(ScummBinaryReader reader, string resourceId, IDictionary<string, object> parameters)
         {
-            reader.FindDataBlock("OBIM");
+            reader.FindDataBlockNoInfo("OBIM");
             // read header
             uint blockSize = reader.FindDataBlock("IMHD");
 
             UInt16 id = reader.ReadUInt16();
+            var obj = ResourceManager.FindObject(id);
+
             UInt16 numImages = reader.ReadUInt16();
             UInt16 numZs = reader.ReadUInt16();
             Byte flags = reader.ReadByte();
@@ -32,20 +34,20 @@ namespace Scumm.Engine.Resources.Graphics
             UInt16 width = reader.ReadUInt16();
             UInt16 height = reader.ReadUInt16();
 
-            Image image = new Image(width, height);
-            var roomPalette = (Color[])parameters["RoomPalette"];
+            obj.Position = new Vector2(x, y);
+            obj.Image = new Image(width, height);
 
-            // TODO: Add code to take into account multiple image blocks (object images)
+            var roomPalette = (Color[])parameters["RoomPalette"];
             if (numImages > 0)
             {
                 if (reader.FindDataBlock("IM01") == 0)
                 {
                     throw new InvalidOperationException("Could not find image block.");
                 }
-                ReadImageDataBlock(reader, image, roomPalette);
+                ReadImageDataBlock(reader, obj.Image, roomPalette);
             }
 
-            return image;
+            return obj.Image;
         }
     }
 }

@@ -11,6 +11,7 @@ namespace Scumm.Engine.Resources.Loaders
 {
 	public class ImageLoader : ResourceLoader
 	{
+        byte[] decompressTable = new byte[10]{ 0x0, 0x1 , 0x3, 0x7, 0xF, 0x1F, 0x3F, 0x7F, 0xFF, 0x0 };
         GraphicsDevice graphicsDevice;
 
         public ImageLoader(GraphicsDevice device)
@@ -54,7 +55,7 @@ namespace Scumm.Engine.Resources.Loaders
 				var stripeHeader = reader.ReadByte();
                 var codingShift = (byte)(stripeHeader % 10);
 				var encoderType = stripeHeader / 10;
-
+                
 				byte[] decodedData = null;
 
 				if (encoderType == (int)EncoderType.UnkAOpaque)

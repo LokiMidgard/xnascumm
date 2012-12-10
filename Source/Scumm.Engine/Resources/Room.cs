@@ -68,7 +68,7 @@ namespace Scumm.Engine.Resources
         public void Draw(SpriteBatch spriteBatch)
         {
             if(backgroundImage != null)
-                backgroundImage.Draw(spriteBatch);
+                backgroundImage.Draw(spriteBatch, Vector2.Zero);
         }
     }
 }

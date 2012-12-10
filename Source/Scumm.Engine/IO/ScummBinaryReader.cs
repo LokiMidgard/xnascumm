@@ -9,7 +9,7 @@ namespace Scumm.Engine.IO
     public class ScummBinaryReader : BinaryReader
     {
         private byte[] buffer;
-        private int bitPosition = -1;
+        public int bitPosition = -1;
 
         public ScummBinaryReader(Stream baseStream)
             : base(baseStream)
@@ -180,8 +180,23 @@ namespace Scumm.Engine.IO
                     return itemSize;
                 }
 
-                byteArray = ReadBytes(4);
-                currentBlockType = enc.GetString(byteArray);
+                if (IsKnownBlock(currentBlockType))
+                {
+                    itemSize = ReadUInt32BigEndian();
+                    BaseStream.Position += itemSize - 8;
+                    byteArray = ReadBytes(4);
+                    currentBlockType = enc.GetString(byteArray);
+                }
+                else
+                {
+                    byte newChar = ReadByte();
+                    string newStr = "";
+                    newStr += currentBlockType[1];
+                    newStr += currentBlockType[2];
+                    newStr += currentBlockType[3];
+                    newStr += (char)newChar;
+                    currentBlockType = newStr;
+                }
             }
             return 0;
         }
@@ -191,6 +206,16 @@ namespace Scumm.Engine.IO
         private bool IsContainerBlock(string blockType)
         {
             if (blockType == "LECF" || blockType == "LFLF" || blockType == "ROOM" || blockType == "PALS" || blockType == "WRAP" || blockType == "RMIM" || blockType == "IM00" || blockType == "OBIM" || blockType == "IMnn" || blockType == "OBCD" || blockType == "SOUN" || blockType == "SOU")
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool IsKnownBlock(string blockType)
+        {
+            if (blockType == "ZP01" || blockType == "ZP02")
             {
                 return true;
             }
