@@ -4,18 +4,47 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
+using Scumm.Engine.Resources.Graphics;
 
 namespace Scumm.Engine.Resources
 {
     public class Verb : Resource
     {
-        string stream = "";
+        public enum Type
+        {
+            StringVerb,
+            BitmapVerb
+        };
+
+        Type type;
         Vector2 position = Vector2.Zero;
 
+        // String verbs
+        Charset charset;
+        string stream;
+
+        // Bitmap verbs
+        Image image;
+        
+        public Type VerbType
+        {
+            get { return type; }
+            set { type = value; }
+        }
+        public Image Image
+        {
+            get { return image; }
+            set { image = value; }
+        }
         public string Stream
         {
             get { return stream; }
             set { stream = value; }
+        }
+        public Charset Charset
+        {
+            get { return charset; }
+            set { charset = value; }
         }
 
         public int X
@@ -31,18 +60,20 @@ namespace Scumm.Engine.Resources
         public Verb(string resourceId)
             : base(resourceId)
         {
-            
+            stream = "";
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            char[] buffer = new char[stream.Length];
-            for (int i = 0; i < stream.Length; ++i) 
+            if (type == Type.StringVerb)
             {
-                if ((stream[i] < 'a' || stream[i] > 'z') && (stream[i] < 'A' || stream[i] > 'Z'))
-                    buffer[i] = ' ';
-                else
-                    buffer[i] = stream[i];
+                if (charset != null)
+                    charset.DrawText(spriteBatch, stream, position);
+            }
+            else
+            {
+                if(image != null)
+                    image.Draw(spriteBatch, position);
             }
         }
     }

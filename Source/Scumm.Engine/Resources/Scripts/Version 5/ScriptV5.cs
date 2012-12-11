@@ -1311,6 +1311,7 @@ namespace Scumm.Engine.Resources.Scripts
                     // load from code
                     case 2:
                         verb = resourceManager.Load<Verb>("VERB", verbId, DataReader);
+                        verb.VerbType = Verb.Type.StringVerb;
                         //loadPtrToResource(8, slot, NULL);
                         //if (slot == 0)
                         //    nukeResource(8, slot);
@@ -1335,6 +1336,8 @@ namespace Scumm.Engine.Resources.Scripts
                         break;
                     // set on
                     case 6:
+                        verb.Charset = resourceManager.Load<Charset>("CHRS", 1, new Dictionary<string, object>() { { "RoomId", scriptManager.CurrentRoomId } });
+                        sceneManager.Verbs.Add(verb);
                         //vs->curmode = 1;
                         break;
                     // set off
@@ -1387,19 +1390,20 @@ namespace Scumm.Engine.Resources.Scripts
                         //    nukeResource(8, slot);
                         //vs->type = 0;
                         //vs->imgindex = 0;
-                        break;
-                    case 22: /* assign object */
+                        break; 
+                    case 22: // assign object
                     case 150:
-                        GetVarOrDirectWord(0x80, subOpCode);
-                        GetVarOrDirectByte(0x40, subOpCode);
-                        //a = getVarOrDirectWord(0x80);
-                        //b = getVarOrDirectByte(0x40);
-                        //if (slot && vs->imgindex != a)
-                        //{
-                        //    setVerbObject(b, a, slot);
-                        //    vs->type = 1;
-                        //    vs->imgindex = a;
-                        //}
+                        short objId = GetVarOrDirectWord(0x80, subOpCode);
+                        Byte roomId = GetVarOrDirectByte(0x40, subOpCode);
+
+                        Room room = resourceManager.Load<Room>("ROOM", roomId);
+                        Object obj = resourceManager.FindObject(objId);
+
+                        verb = resourceManager.FindVerb(verbId);
+                        verb.Image = obj.Image;
+                        verb.VerbType = Verb.Type.BitmapVerb;
+                        sceneManager.Verbs.Add(verb);
+
                         break;
                     case 23: /* set back color */
                         GetVarOrDirectByte(0x80, subOpCode);

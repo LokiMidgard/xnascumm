@@ -53,11 +53,17 @@ namespace Scumm.Engine.Resources.Loaders
             if (objectsCount == 13)
                 objectsCount -= 1;
 
+            if (objectsCount == 90)
+                objectsCount -= 7;
+
             for (int i = 0; i < objectsCount; ++i)
                 ResourceManager.Load<Image>("OBIM", new Dictionary<string, object>() { { "RoomPalette", room.Palette } });
 
             if (objectsCount == 12)
                 objectsCount += 1;
+
+            if (objectsCount == 83)
+                objectsCount += 7;
 
             for (int i = 0; i < objectsCount; ++i)
                 ResourceManager.Load<Object>("OBJC", new Dictionary<string, object>());
