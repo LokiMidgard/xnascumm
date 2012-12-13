@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
+using Scumm.Engine.Resources.Graphics;
 
 namespace Scumm.Engine.Resources.Scripts
 {
@@ -13,12 +14,13 @@ namespace Scumm.Engine.Resources.Scripts
         private bool centered;
         private byte currentRoomId;
 
+        private Camera camera;
+
         public byte CurrentRoomId
         {
             get { return currentRoomId; }
             set { currentRoomId = value; }
         }
-
         public bool Centered
         {
             get { return centered; }
@@ -29,7 +31,6 @@ namespace Scumm.Engine.Resources.Scripts
             get { return overhead; }
             set { overhead = value; }
         }
-
         public Vector2 StringPos
         {
             get { return stringPos; }

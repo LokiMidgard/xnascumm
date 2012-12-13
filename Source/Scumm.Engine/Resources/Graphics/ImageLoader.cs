@@ -27,11 +27,20 @@ namespace Scumm.Engine.Resources.Loaders
         
 		protected void ReadImageDataBlock(ScummBinaryReader reader, Image image, Color[] roomPalette)
 		{
-            if (reader.FindDataBlock("SMAP") == 0)
+            Tuple<uint, string> findResult = reader.FindOneDataBlockOf("SMAP", "BOMP");
+            if (findResult.Item1 == 0)
 			{
 				throw new InvalidOperationException("Could not find image data block.");
 			}
 
+            if (findResult.Item2 == "SMAP")
+                ReadSMAP(reader, image, roomPalette);
+            //else
+            //    reader.BaseStream.Position += findResult.Item1 - 8;
+        }
+
+        private void ReadSMAP(ScummBinaryReader reader, Image image, Color[] roomPalette)
+        {
 			var smapStartOffset = reader.BaseStream.Position;
 			var stripesCount = image.Width / 8;
 
@@ -95,6 +104,10 @@ namespace Scumm.Engine.Resources.Loaders
             image.Texture = new Microsoft.Xna.Framework.Graphics.Texture2D(graphicsDevice, image.Width, image.Height, false, Microsoft.Xna.Framework.Graphics.SurfaceFormat.Color);
 			image.Texture.SetData(textureData);
 		}
+
+        private void ReadBOMP(ScummBinaryReader reader, Image image, Color[] roomPalette)
+        {
+        }
 
 		private byte[] DecodeUnkAStripe(ScummBinaryReader reader, byte codingShift, int stripHeight, Color[] roomPalette)
 		{

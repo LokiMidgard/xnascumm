@@ -38,9 +38,10 @@ namespace Scumm.Engine.Resources.Graphics
             obj.Image = new Image(width, height);
 
             var roomPalette = (Color[])parameters["RoomPalette"];
-            if (numImages > 0)
+            for(int i = 0; i < numImages; ++i)
             {
-                if (reader.FindDataBlock("IM01") == 0)
+                string blockName = String.Format("IM{0:X2}", i + 1);
+                if(reader.FindDataBlock(blockName) == 0)
                 {
                     throw new InvalidOperationException("Could not find image block.");
                 }

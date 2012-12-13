@@ -138,6 +138,30 @@ namespace Scumm.Engine.IO
             return FindDataBlock(blockType);
         }
 
+        public Tuple<uint, string> FindOneDataBlockOf(string blockType1, string blockType2)
+        {
+            var currentBlockType = new string(ReadChars(4));
+            var itemSize = ReadUInt32BigEndian();
+
+            while (BaseStream.Position <= BaseStream.Length)
+            {
+                if (currentBlockType == blockType1 || currentBlockType == blockType2)
+                {
+                    return new Tuple<uint, string>(itemSize, currentBlockType);
+                }
+
+                if (!IsContainerBlock(currentBlockType))
+                {
+                    BaseStream.Position += itemSize - 8;
+                }
+
+                currentBlockType = new string(ReadChars(4));
+                itemSize = ReadUInt32BigEndian();
+            }
+
+            return new Tuple<uint, string>(0, "");
+        }
+
         public uint FindDataBlock(string blockType)
         {
             var currentBlockType = new string(ReadChars(4));

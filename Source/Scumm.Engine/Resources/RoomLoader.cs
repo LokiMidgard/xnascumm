@@ -52,7 +52,7 @@ namespace Scumm.Engine.Resources.Loaders
             Image[] images  = new Image[objectsCount];
             if (objectsCount == 13)
                 objectsCount -= 1;
-
+            
             if (objectsCount == 90)
                 objectsCount -= 7;
 
