@@ -124,7 +124,7 @@
     <Compile Include="Resources\Scripts\ScriptLoader.cs" />
     <Compile Include="Resources\Scripts\ScriptManager.cs" />
     <Compile Include="Resources\Scripts\Script.cs" />
-    <Compile Include="Resources\Scripts\Version 5\ScriptStateV5.cs" />
+    <Compile Include="Resources\Scripts\Version 5\ScummStateV5.cs" />
     <Compile Include="Resources\Scripts\ScriptStatus.cs" />
     <Compile Include="Resources\Scripts\Version 5\ScriptV5.cs" />
     <Compile Include="Resources\Scripts\Version 5\VariableV5.cs" />

@@ -12,12 +12,14 @@ namespace Scumm.Engine.Resources.Scripts
     {
         ScriptManager scriptManager;
         SceneManager sceneManager;
+        ScummStateV5 scummState;
         StreamWriter logFile;
 
-        public ScriptLoader(ScriptManager scriptMngr, SceneManager sceneMngr, StreamWriter logFile)
+        public ScriptLoader(ScriptManager scriptMngr, SceneManager sceneMngr, ScummStateV5 state, StreamWriter logFile)
         {
             scriptManager = scriptMngr;
             sceneManager = sceneMngr;
+            scummState = state;
             this.logFile = logFile;
         }
 
@@ -61,7 +63,7 @@ namespace Scumm.Engine.Resources.Scripts
 
             // Read the opcode blocks
             var data = reader.ReadBytes((int)blockSize - 8);
-            var script = new ScriptV5(resourceId, data, scriptManager, resourceManager, sceneManager, this.logFile);
+            var script = new ScriptV5(resourceId, data, scriptManager, resourceManager, sceneManager, scummState, this.logFile);
             return script;
         }
     }

@@ -5,6 +5,7 @@ using System.Text;
 using Scumm.Engine.Resources.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Scumm.Engine.Resources.Scripts;
 
 namespace Scumm.Engine.Resources
 {
@@ -214,10 +215,21 @@ namespace Scumm.Engine.Resources
             this.position = new Vector2(x, y);
         }
 
-        public void Talk(string text, Charset textCharset)
+        public void Talk(string text, Charset textCharset, ScummStateV5 state)
         {
             talk = text;
             charset = textCharset;
+
+            // draw overhead
+            if (state.Overhead)
+            {
+                talkPosition.X = position.X;
+                if (state.Centered)
+                {
+                    talkPosition.X -= charset.GetTextWidth(talk)/2;
+                }
+            }
+
         }
 
         public void Update()
@@ -234,7 +246,7 @@ namespace Scumm.Engine.Resources
                 costume.Draw(spriteBatch, new Vector2(position.X, position.Y - elevation), direction, this.ScaleX, this.ScaleY);
 
             if (talk != null && charset != null)
-                charset.DrawText(spriteBatch, talk, talkPosition*2);
+                charset.DrawText(spriteBatch, talk, talkPosition);
         }
     }
 }

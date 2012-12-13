@@ -10,8 +10,6 @@ namespace Scumm.Engine.Resources.Scripts
     {
         ResourceManager resourceManager;
 
-        byte currentRoomId;
-
         public ScriptManager(ResourceManager manager)
         {
             this.VirtualMachineStack = new Stack<int>();
@@ -19,7 +17,6 @@ namespace Scumm.Engine.Resources.Scripts
             this.BitVariables = new Dictionary<uint, uint>();
             this.ActiveScripts = new List<Script>();
 
-            currentRoomId = 0;
             resourceManager = manager;
 
             // Initialize variables
@@ -35,12 +32,6 @@ namespace Scumm.Engine.Resources.Scripts
             WriteVariable((uint)VariableV5.VAR_SOUNDPARAM,   0);
             WriteVariable((uint)VariableV5.VAR_SOUNDPARAM2,  0);
             WriteVariable((uint)VariableV5.VAR_SOUNDPARAM3,  0);
-        }
-
-        public byte CurrentRoomId
-        {
-            get { return currentRoomId; }
-            set { currentRoomId = value; }
         }
 
         public IList<Script> ActiveScripts

@@ -18,11 +18,14 @@ namespace Scumm.Engine
 {
     public class ScummEngine : Game
     {
-        private static ScummEngine instance;      
+        //private static ScummEngine instance;
+      
         private SceneManager sceneManager;
         private EventManager eventManager;
         private ResourceManager resourceManager;
         private ScriptManager scriptManager;
+        private ScummStateV5 scummState;
+
         private StreamWriter logFile;
         
         public StreamWriter LogFile
@@ -45,12 +48,20 @@ namespace Scumm.Engine
             get { return sceneManager; }
             private set { sceneManager = value; }
         }
+        public ScummStateV5 ScummState
+        {
+            get { return scummState; }
+            set { scummState = value; }
+        }
                 
         public ScummEngine(string gamePath, string gameId, int scummVersion)
         {
             // Log file
             logFile = new StreamWriter("Scumm.log");
             logFile.AutoFlush = true;
+
+            // Initialize state
+            ScummState = new ScummStateV5();
 
             // Initialize scene manager
             SceneManager = new SceneManager(this);
@@ -77,7 +88,7 @@ namespace Scumm.Engine
             ResourceManager.AddLoader("ROOM", new RoomLoader());
             ResourceManager.AddLoader("RMIM", new RoomImageLoader(GraphicsDevice));
             ResourceManager.AddLoader("OBIM", new ObjectImageLoader(GraphicsDevice));
-            ResourceManager.AddLoader("SCRP", new ScriptLoader(ScriptManager, SceneManager, this.logFile));
+            ResourceManager.AddLoader("SCRP", new ScriptLoader(ScriptManager, SceneManager, ScummState, this.logFile));
             ResourceManager.AddLoader("STRN", new StringLoader());
             ResourceManager.AddLoader("CHRS", new CharsetLoader(GraphicsDevice));
             ResourceManager.AddLoader("COST", new CostumeLoader(GraphicsDevice));
@@ -87,7 +98,7 @@ namespace Scumm.Engine
             // Read game files
             ResourceManager.LoadGame();
 
-            this.ScriptManager.Run(456);
+            this.ScriptManager.Run(0);
         }
         protected override void UnloadContent()
         {

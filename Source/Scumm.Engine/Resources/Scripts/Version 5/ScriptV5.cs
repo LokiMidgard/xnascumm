@@ -10,16 +10,18 @@ namespace Scumm.Engine.Resources.Scripts
     public class ScriptV5 : Script
     {
         static int instructionCount = 0;
-        private ScriptStateV5 scriptState = new ScriptStateV5();
 
         private Action[] opCodeHandlers;
         private uint currentInstructionOffset;
 
-        public ScriptV5(string resourceId, byte[] data, ScriptManager scriptMngr, ResourceManager resourceMngr, SceneManager sceneMngr, StreamWriter logFile)
+        private ScummStateV5 scummState;
+        
+        public ScriptV5(string resourceId, byte[] data, ScriptManager scriptMngr, ResourceManager resourceMngr, SceneManager sceneMngr, ScummStateV5 state, StreamWriter logFile)
             : base(resourceId, data, scriptMngr, resourceMngr, sceneMngr, logFile)
         {
-            opCodeHandlers = new Action[256];
+            scummState = state;
 
+            opCodeHandlers = new Action[256];
             opCodeHandlers[0x00] = new Action(OpStopObjectCode);
             opCodeHandlers[0x01] = new Action(OpPutActor);
             opCodeHandlers[0x07] = new Action(OpSetState);
@@ -125,13 +127,12 @@ namespace Scumm.Engine.Resources.Scripts
         private void StartScene(byte roomId)
         {
             scriptManager.WriteVariable((uint)VariableV5.VAR_NEW_ROOM, roomId, this);
-            RunExitScript(scriptManager.CurrentRoomId);
+            RunExitScript(scummState.CurrentRoomId);
 
             scriptManager.WriteVariable((uint)VariableV5.VAR_ROOM, roomId, this);
             scriptManager.WriteVariable((uint)VariableV5.VAR_ROOM_RESOURCE, roomId, this);
 
-            scriptManager.CurrentRoomId = roomId;
-
+            scummState.CurrentRoomId = roomId;
             // provisory?!
             if (roomId == 0)
                 return;
@@ -253,40 +254,39 @@ namespace Scumm.Engine.Resources.Scripts
                         Vector2 position;
                         position.X = GetVarOrDirectWord(0x80, currentOpCode);
                         position.Y = GetVarOrDirectWord(0x40, currentOpCode);
-                        scriptState.StringPos = position;
+                        scummState.StringPos = position;
                         break;
-                    case 1: /* color */
+                    case 1: // color
                         GetVarOrDirectByte(0x80, currentOpCode);
                         //_stringColor[textSlot] = 
                         break;
-                    case 2: /* right */
+                    case 2: // right
                         GetVarOrDirectByte(0x80, currentOpCode);
                         //_stringRight[textSlot] = getVarOrDirectWord(0x80);
                         break;
-                    case 4:	/* center*/
-                        //_stringCenter[textSlot] = 1;
-                        //_stringOverhead[textSlot] = 0;
+                    case 4:	// center
+                        scummState.Centered = true;
                         break;
-                    case 6: /* left */
+                    case 6: // left
                         //_stringCenter[textSlot] = 0;
                         //_stringOverhead[textSlot] = 0;
                         break;
-                    case 7: /* overhead */
-                        //_stringOverhead[textSlot] = 1;
+                    case 7: // overhead
+                        scummState.Overhead = true;
                         break;
                     case 8: // ignore
                         GetVarOrDirectWord(0x80, currentOpCode);
                         GetVarOrDirectWord(0x40, currentOpCode);
                         break;
                     case 15:
-                        string b = new string(DataReader.ReadCharString());
+                        string message = new string(DataReader.ReadCharString());
                         switch (textSlot)
                         {
                             case 0:
                                 {
                                     Actor actor = resourceManager.FindActor(actorId);
-                                    Charset charset = resourceManager.Load<Charset>("CHRS", 2, new Dictionary<string, object>() { { "RoomId", scriptManager.CurrentRoomId } }); ;
-                                    actor.Talk(b, charset);
+                                    Charset charset = resourceManager.Load<Charset>("CHRS", 2, new Dictionary<string, object>() { { "RoomId", scummState.CurrentRoomId } }); ;
+                                    actor.Talk(message, charset, scummState);
                                     break;
                                 }
                             //case 1: drawString(1); break;
@@ -475,7 +475,7 @@ namespace Scumm.Engine.Resources.Scripts
             var roomId = DataReader.ReadByte();
 
             if (roomId == 0)
-                roomId = scriptManager.CurrentRoomId;
+                roomId = scummState.CurrentRoomId;
 
             Object obj = resourceManager.FindObject(objId);
             sceneManager.AddObjectToInventory(obj);
@@ -558,7 +558,7 @@ namespace Scumm.Engine.Resources.Scripts
             }
             else
             {
-                Room room = resourceManager.Load<Room>("ROOM", scriptManager.CurrentRoomId);
+                Room room = resourceManager.Load<Room>("ROOM", scummState.CurrentRoomId);
                 Script script = room.Scripts[scriptId - 200];
                 script.Run();
             }
@@ -657,7 +657,7 @@ namespace Scumm.Engine.Resources.Scripts
             var actorId = GetVarOrDirectByte(0x80, currentOpCode);
             Actor actor = resourceManager.FindActor(actorId);
 
-            if (actor.RoomID != scriptManager.CurrentRoomId)
+            if (actor.RoomID != scummState.CurrentRoomId)
                 StartScene(actor.RoomID);
 
             // PROVISORY
@@ -760,7 +760,7 @@ namespace Scumm.Engine.Resources.Scripts
 
             Actor actor = resourceManager.FindActor(actorID);
             actor.PutActor(x, y);
-            if (actor.RoomID == scriptManager.CurrentRoomId)
+            if (actor.RoomID == scummState.CurrentRoomId)
                 sceneManager.CurrentActors.Add(actor);
 
             #if !COMPARE
@@ -790,7 +790,7 @@ namespace Scumm.Engine.Resources.Scripts
             if (room != 0)
                 resourceManager.Load<Room>("ROOM", room);
 
-            this.scriptManager.CurrentRoomId = room;
+            scummState.CurrentRoomId = room;
             StartScene(room);
         }
 
@@ -1004,7 +1004,7 @@ namespace Scumm.Engine.Resources.Scripts
                         #if !COMPARE
                         this.LogOpCodeInformations("Actor{0}.CostumeID = {1}", actorId, costumeId);
                         #endif
-                        actor.Costume = resourceManager.Load<Costume>("COST", (int)costumeId, new Dictionary<string, object>() { { "RoomId", scriptManager.CurrentRoomId } });
+                        actor.Costume = resourceManager.Load<Costume>("COST", (int)costumeId, new Dictionary<string, object>() { { "RoomId", scummState.CurrentRoomId } });
                         break;
                     case 2: /* walkspeed */
                         GetVarOrDirectByte(0x80, subOpCode);
@@ -1336,7 +1336,7 @@ namespace Scumm.Engine.Resources.Scripts
                         break;
                     // set on
                     case 6:
-                        verb.Charset = resourceManager.Load<Charset>("CHRS", 1, new Dictionary<string, object>() { { "RoomId", scriptManager.CurrentRoomId } });
+                        verb.Charset = resourceManager.Load<Charset>("CHRS", 1, new Dictionary<string, object>() { { "RoomId", scummState.CurrentRoomId } });
                         sceneManager.Verbs.Add(verb);
                         //vs->curmode = 1;
                         break;
@@ -1625,7 +1625,7 @@ namespace Scumm.Engine.Resources.Scripts
 
                 // load charset
                 case 18:
-                    Charset charset = resourceManager.Load<Charset>("CHRS", resourceId, new Dictionary<string, object>() { { "RoomId", scriptManager.CurrentRoomId } });
+                    Charset charset = resourceManager.Load<Charset>("CHRS", resourceId, new Dictionary<string, object>() { { "RoomId", scummState.CurrentRoomId } });
                     #if !COMPARE
                     this.LogOpCodeInformations("LoadCharSet({0})", resourceId);
                     #endif
