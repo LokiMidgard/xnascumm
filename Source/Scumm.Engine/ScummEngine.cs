@@ -98,7 +98,7 @@ namespace Scumm.Engine
             // Read game files
             ResourceManager.LoadGame();
 
-            this.ScriptManager.Run(0);
+            this.ScriptManager.Run(456);
         }
         protected override void UnloadContent()
         {
@@ -107,7 +107,27 @@ namespace Scumm.Engine
 
         protected override void Update(GameTime gameTime)
         {
+            int delta = ((short)this.scriptManager.Variables[(uint)VariableV5.VAR_TIMER_NEXT] != 0xFF) ? (short)this.scriptManager.Variables[(uint)VariableV5.VAR_TIMER_NEXT] : 4;
+            var deltaTimeSpan = TimeSpan.FromMilliseconds((float)delta * 1000 / 60);
+            //deltaTimeSpan = TimeSpan.FromMilliseconds(500);
+            if (this.TargetElapsedTime != deltaTimeSpan)
+            {
+                this.TargetElapsedTime = deltaTimeSpan;
+            }
+
+            // Notify the script about how much time has passed, in ticks (60 ticks per second)
+            if (this.scriptManager.Variables.ContainsKey((uint)VariableV5.VAR_TIMER) && (int)this.scriptManager.Variables[(uint)VariableV5.VAR_TIMER] != 0xFF)
+            {
+                this.scriptManager.Variables[(uint)VariableV5.VAR_TIMER] = delta;
+            }
+
+            if (this.scriptManager.Variables.ContainsKey((uint)VariableV5.VAR_TIMER_TOTAL) && (int)this.scriptManager.Variables[(uint)VariableV5.VAR_TIMER_TOTAL] != 0xFF)
+            {
+                this.scriptManager.Variables[(uint)VariableV5.VAR_TIMER_TOTAL] = (int)this.scriptManager.Variables[(uint)VariableV5.VAR_TIMER_TOTAL] + delta;
+            }
+
             base.Update(gameTime);
+
             scriptManager.RunActiveScripts(gameTime);
         }
 

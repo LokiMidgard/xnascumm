@@ -380,7 +380,7 @@ namespace Scumm.Engine.Resources.Scripts
                     this.LogOpCodeInformations("Actor{0}.Wait()", actorID);
                     #endif
 
-                    if (actor.IsMoving)
+                    if (actor.IsWalking)
                     {
                         break;
                     }
@@ -1007,11 +1007,14 @@ namespace Scumm.Engine.Resources.Scripts
                         actor.Costume = resourceManager.Load<Costume>("COST", (int)costumeId, new Dictionary<string, object>() { { "RoomId", scummState.CurrentRoomId } });
                         break;
                     case 2: /* walkspeed */
-                        GetVarOrDirectByte(0x80, subOpCode);
-                        GetVarOrDirectByte(0x40, subOpCode);
-                        //i = 
-                        //j = 
-                        //setActorWalkSpeed(a, i, j);
+                        var walkSpeedX = GetVarOrDirectByte(0x80, subOpCode);
+                        var walkSpeedY = GetVarOrDirectByte(0x40, subOpCode);
+
+                        actor.WalkSpeedX = walkSpeedX;
+                        actor.WalkSpeedY = walkSpeedY;
+                        #if !COMPARE
+                        this.LogOpCodeInformations("Actor{0}.SetWalkSpeed({1}, {2})", actorId, walkSpeedX, walkSpeedY);
+                        #endif
                         break;
                     case 3: /* sound */
                         GetVarOrDirectByte(0x80, subOpCode);
